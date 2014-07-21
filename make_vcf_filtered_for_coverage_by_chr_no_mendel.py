@@ -87,7 +87,7 @@ def print_filtered_vcf(out_dir, vcf_file, ditch, me):
 			if d[0] != cur_chr:
 				if out_file:
 					o.close()
-				out_file = '%sgatk.ug.zf_fam.%s.variable.coverage.vqsr.vcf.gz' % (out_dir, d[0])
+				out_file = '%sgatk.ug.zf_unrel.%s.coverage.no_mendel.vqsr.vcf.gz' % (out_dir, d[0])
 				o = gzip.open(out_file, 'w')
 				for head in header:
 					o.write(head)
@@ -109,7 +109,7 @@ def main():
         
         # vcf file with FILTERED variants only
 	# assumed to be gzipped
-	vcf_file = '/mnt/lustre/home/sonal.singhal1/ZF/phasing/family_approach/family_vcf/gatk.ug.MP1-5.allchrs.snps.indels.vqsr.variable.vcf.gz'
+	vcf_file = '/mnt/gluster/home/emleffler/genotype_callsets/zebrafinch/zf_unrels/unified_genotyper/after_vqsr/gatk.ug.unrelzf.allchrs.snps.indels.vqsr2.vcf.gz'
  
         # file with coverage summary, created by 'get_average_depth.pl'
         cov_summary = '/mnt/lustre/home/sonal.singhal1/ZF/masked_genome/zebrafinch_depth_summary.txt'
@@ -120,7 +120,7 @@ def main():
 	mendel_file = '/mnt/gluster/home/emleffler/genotype_callsets/zebrafinch/zf_family/unified_genotyper/after_vqsr/mendelian_errors/gatk.ug.MP1-5.allchrs.vqsr.filtered.allsites.with.errors.positions'
 
         # out directory      
-	out_dir = '/mnt/lustre/home/sonal.singhal1/ZF/phasing/family_approach/family_vcf/by_chr/'
+	out_dir = '/mnt/lustre/home/sonal.singhal1/ZF/phasing/family_approach/unrel_vcf/by_chr/'
 
         # chromosome names
         chrs = [ 'chr1', 'chr1A', 'chr1B', 'chr2', 'chr3', 'chr4', 'chr4A', 'chr5', 'chr6', 'chr7', 'chr8',
@@ -135,4 +135,3 @@ def main():
 
 if __name__ == "__main__":
         main()
-
