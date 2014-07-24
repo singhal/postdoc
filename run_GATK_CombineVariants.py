@@ -14,4 +14,5 @@ for chr in chrs:
 
 	call = '/home/shyamg/bin/java -Xmx5g -jar ~/bin/GenomeAnalysisTK.jar -R ~/reference/Zfinch.fa -T CombineVariants --variant %s --variant %s -o %s -genotypeMergeOptions UNSORTED' % (vcf1, vcf2, out) 
 
-	subprocess.call('echo \"%s\" | qsub -l h_vmem=7g -cwd -V -j y -N \'%s\'' % (call, chr + 'cat_gatk'), shell=True)
+	if chr == 'chr22':
+		subprocess.call('echo \"%s\" | qsub -l h_vmem=7g -cwd -V -j y -N \'%s\'' % (call, chr + 'cat_gatk'), shell=True)

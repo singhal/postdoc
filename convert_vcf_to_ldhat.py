@@ -3,7 +3,7 @@ import re
 import numpy as np
 import glob
 
-vcfs = glob.glob('/mnt/lustre/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.chrLGE22*filtered.coverage.vqsr.vcf.gz')
+vcfs = glob.glob('/mnt/lustre/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.*filtered.coverage.vqsr.vcf.gz')
 out_dir = '/mnt/lustre/home/sonal.singhal1/LTF/phasing/LDhat/'
 
 for vcf in vcfs:
@@ -65,7 +65,7 @@ for vcf in vcfs:
 	tracker = 1
 	genos = np.asarray(array).T.tolist()
 	while (3800 * (tracker - 1)) < num_sites:
-		out_site = out_dir + 'filtered.coverage.vqsr.%s_chunk%s.locs' % (chr, tracker)
+		out_site = out_dir + 'sites_locs/filtered.coverage.vqsr.%s_chunk%s.locs' % (chr, tracker)
 
 		start = 3800 * (tracker - 1)
 		end = start + 4000
@@ -76,14 +76,15 @@ for vcf in vcfs:
 		chunk_sites = end - start
 		
 		out = open(out_site, 'w')
-		chr_len = (sites[end - 1] - sites[start]) / float(1000)
+		# how length is defined is a bit wonky, but i think this should generally work.
+		chr_len = sites[end - 1] / float(1000)
 		out.write('%s\t%s\tL\n' % (chunk_sites, chr_len))
 		for site in sites[start:end]:
 			out.write('%s\t' % (site / float(1000)))
 		out.write('\n')
 		out.close()
 	
-		out_geno = out_dir + 'filtered.coverage.vqsr.%s_chunk%s.sites' % (chr, tracker)
+		out_geno = out_dir + 'sites_locs/filtered.coverage.vqsr.%s_chunk%s.sites' % (chr, tracker)
 		out = open(out_geno, 'w')
 		out.write('%s\t%s\t2\n' % (len(inds), chunk_sites)) 
 		for id, geno in zip(inds, genos):

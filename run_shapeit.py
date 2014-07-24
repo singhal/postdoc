@@ -1,14 +1,14 @@
 import subprocess
 import re
 
-chrs = [ 'chr1', 'chr1A', 'chr1B', 'chr2', 'chr3', 'chr4', 'chr4A', 'chr5', 'chr6', 'chr7', 'chr8',
+chrs = [ 'chr1', 'chr1A', 'chr1B', 'chr2', 'chr4', 'chr4A', 'chr5', 'chr6', 'chr7', 'chr8',
          'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18',
          'chr19', 'chr20', 'chr21', 'chr22', 'chr23', 'chr24', 'chr25', 'chr26', 'chr27', 'chr28',
          'chrLG2', 'chrLG5', 'chrLGE22', 'chrZ' ]
 
 chrs_long = ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr1A', 'chr1B']
 
-"""
+'''
 bam_files = {   '26462': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned_mateFixed_bams/101.mateFixed.realigned.bam',
 		'28339': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned_mateFixed_bams/105.mateFixed.realigned.bam',
 		'28353': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned_mateFixed_bams/109.mateFixed.realigned.bam',
@@ -28,28 +28,28 @@ bam_files = {   '26462': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned
 		'26795': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned_mateFixed_bams/177.mateFixed.realigned.bam',
 		'28078': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned_mateFixed_bams/185.mateFixed.realigned.bam',
 		'28313': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned_mateFixed_bams/189.mateFixed.realigned.bam',}
-"""
+'''
 
 bam_files = {   '73783': '/mnt/lustre/home/sonal.singhal1/LTF/bams/73783.realigned.mateFixed.bam',
-		'73788': '/KG/sannareddyk/LTFinch/realigned_mateFixed_bams/recal_bams/73788.recal.bam',
-		'73790': '/KG/sannareddyk/LTFinch/realigned_mateFixed_bams/recal_bams/73790.recal.bam',
-		'73900': '/data/internal_restricted/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/73900.recal.bam',
-		'73903': '/data/internal_restricted/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/73903.recal.bam',
-		'73907': '/data/internal_restricted/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/73907.recal.bam',
-		'73933': '/data/internal_restricted/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/73933.recal.bam',
+		'73788': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/73788.recal.bam',
+		'73790': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/73790.recal.bam',
+		'73900': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/73900.recal.bam',
+		'73903': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/73903.recal.bam',
+		'73907': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/73907.recal.bam',
+		'73933': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/73933.recal.bam',
 		'73942': '/mnt/lustre/home/sonal.singhal1/LTF/bams/73942.recal.bam',
 		'73948': '/mnt/lustre/home/sonal.singhal1/LTF/bams/73948.recal.bam',
-		'73958': '/mnt/gluster/home/emleffler/bam_files/LTFinch/realigned_mateFixed_bams/recal_bams/73958.recal.bam',
-		'G111': '/mnt/gluster/home/emleffler/bam_files/LTFinch/realigned_mateFixed_bams/recal_bams/G111.recal.bam',
-		'G118': '/mnt/gluster/home/emleffler/bam_files/LTFinch/realigned_mateFixed_bams/recal_bams/G118.realigned.mateFixed.bam',
-		'G163': '/mnt/gluster/home/emleffler/bam_files/LTFinch/realigned_mateFixed_bams/recal_bams/G163.recal.bam',
-		'G169': '/mnt/gluster/home/emleffler/bam_files/LTFinch/realigned_mateFixed_bams/recal_bams/G169.recal.bam',
-		'G183': '/mnt/gluster/home/emleffler/bam_files/LTFinch/realigned_mateFixed_bams/recal_bams/G183.recal.bam',
-		'G250': '/mnt/gluster/home/emleffler/bam_files/LTFinch/realigned_mateFixed_bams/recal_bams/G250.recal.bam',
-		'G276': '/mnt/gluster/home/emleffler/bam_files/LTFinch/realigned_mateFixed_bams/recal_bams/G276.recal.bam',
-		'G294': '/mnt/gluster/home/emleffler/bam_files/LTFinch/realigned_mateFixed_bams/recal_bams/G294.recal.bam',
+		'73958': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/73958.recal.bam',
+		'G111': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/G111.recal.bam',
+		'G118': '/mnt/lustre/home/sonal.singhal1/LTF/bams/G118.realigned.mateFixed.bam',
+		'G163': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/G163.recal.bam',
+		'G169': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/G169.recal.bam',
+		'G183': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/G183.recal.bam',
+		'G250': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/G250.recal.bam',
+		'G276': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/G276.recal.bam',
+		'G294': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/G294.recal.bam',
 		'W2703': '/mnt/lustre/home/sonal.singhal1/LTF/bams/W2703.recal.bam',
-		'W2994': '/mnt/gluster/home/emleffler/bam_files/LTFinch/realigned_mateFixed_bams/recal_bams/W2994.recal.bam'}
+		'W2994': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/W2994.recal.bam'}
 
 
 dir = '/mnt/lustre/home/sonal.singhal1/LTF/phasing/PIR_approach/'
@@ -57,35 +57,34 @@ vcf_dir = '/mnt/lustre/home/sonal.singhal1/LTF/after_vqsr/by_chr/'
 
 for chr in (chrs):
 	bam_list = dir + chr + '_bamlist'
-	o = open(bam_list, 'w')
-	for bam in bam_files:
-		o.write("%s\t%s\t%s\n" % (bam, bam_files[bam], chr))
-	o.close()
+	# o = open(bam_list, 'w')
+	# for bam in bam_files:
+	#	o.write("%s\t%s\t%s\n" % (bam, bam_files[bam], chr))
+	# o.close()
 	
 	vcf_file = vcf_dir + 'gatk.ug.ltf.%s.filtered.coverage.recoded_biallelic.vqsr.vcf.gz' % chr
 	pir_out = dir + chr + '_PIRlist'	
 	hap_out = dir + chr + '_haplotypes'
 
-	job_file = dir + 'PIR_%s.sh' % chr
-	o = open(job_file, 'w')
-	o.write("~/bin/extractPIRs.v1.r68.x86_64/extractPIRs --bam %s --vcf %s --out %s" % (bam_list, vcf_file, pir_out))
-	o.close()
+	# job_file = dir + 'PIR_%s.sh' % chr
+	# o = open(job_file, 'w')
+	# o.write("~/bin/extractPIRs.v1.r68.x86_64/extractPIRs --bam %s --vcf %s --out %s" % (bam_list, vcf_file, pir_out))
+	# o.close()
 
-	subprocess.call('chmod a+x %s' % job_file, shell=True)
-	if chr == 'chr2':
-		subprocess.call('echo "%s" | qsub -l h_vmem=10g -cwd -V -j y -N "PIR_L%s"' % (job_file, chr), shell=True)
-	else:
-		subprocess.call('echo "%s" | qsub -l h_vmem=5g -cwd -V -j y -N "PIR_L%s"' % (job_file, chr), shell=True)
+	# subprocess.call('chmod a+x %s' % job_file, shell=True)
+	# if chr == 'chr2':
+	#	subprocess.call('echo "%s" | qsub -l h_vmem=10g -cwd -V -j y -N "PIR_L%s"' % (job_file, chr), shell=True)
+	# else:
+	#	subprocess.call('echo "%s" | qsub -l h_vmem=5g -cwd -V -j y -N "PIR_L%s"' % (job_file, chr), shell=True)
 
 	
-	# call = '/mnt/lustre/home/sonal.singhal1/bin/shapeit_v2r790/shapeit -assemble --input-vcf %s --input-pir %s -O %s -L %s --window 0.5 --thread 8' % (vcf_file, pir_out, hap_out, hap_out + '.log')
-	# job_file = dir + 'PIR2_%s.sh' % chr
-	# o = open(job_file, 'w')
-	# o.write(call)
-	# o.close()
-	# subprocess.call('chmod a+x %s' % job_file, shell=True)
-	# if chr in chrs_long:
-	# 	subprocess.call('echo "%s" | qsub -l h_vmem=40g -cwd -V -j y -N "PIR2_L%s"' % (job_file, chr), shell=True)
-	# else:
-	#	subprocess.call('echo "%s" | qsub -l h_vmem=20g -cwd -V -j y -N "PIR2_L%s"' % (job_file, chr), shell=True)
-	#	pass 
+	call = '/mnt/lustre/home/sonal.singhal1/bin/shapeit_v2r790/shapeit -assemble --input-vcf %s --input-pir %s -O %s -L %s --window 0.5 --thread 8' % (vcf_file, pir_out, hap_out, hap_out + '.log')
+	job_file = dir + 'PIR2_L%s.sh' % chr
+	o = open(job_file, 'w')
+	o.write(call)
+	o.close()
+	subprocess.call('chmod a+x %s' % job_file, shell=True)
+	if chr in chrs_long:
+	 	subprocess.call('echo "%s" | qsub -l h_vmem=40g -cwd -V -j y -N "PIR2_L%s"' % (job_file, chr), shell=True)
+	else:
+		subprocess.call('echo "%s" | qsub -l h_vmem=20g -cwd -V -j y -N "PIR2_L%s"' % (job_file, chr), shell=True)
