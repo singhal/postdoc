@@ -55,7 +55,7 @@ vcf_out2 = '/mnt/lustre/home/sonal.singhal1/DBF/after_vqsr/by_chr/gatk.ug.dbf.ch
 genome_out2 = '/mnt/lustre/home/sonal.singhal1/DBF/masked_genome/DBF.masked_genome.fa'
 genome_out1 = '/mnt/lustre/home/sonal.singhal1/ZF/masked_genome/ZF.masked_genome.fa'
 # another outgroup, even further
-genome_out3 = '/mnt/lustre/home/sonal.singhal1/Darwin/finch_genome.fa'
+genome_out3 = '/mnt/lustre/home/sonal.singhal1/Darwin/g_magnirostris/Geospiza_magnirostris.fasta'
 # the genome that tells the reference site at each position
 genome_ref = '/mnt/lustre/home/sonal.singhal1/reference/taeGut1_60.bamorder.fasta'
 
@@ -107,6 +107,8 @@ def call_ancestral_allele(b_in, b_out1, b_out2, b_out3, b_ref):
 			if b_out3 == b_ref:
 				if b_out3 in b_in:
 					return b_out3	
+	if b_out3 in b_in:
+		return b_out3
 	return 'N'
 
 line_count = 0

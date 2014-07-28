@@ -19,8 +19,8 @@ for merge_vcf in merge_vcfs:
 	chr = re.search('(chr[a-z|A-Z|0-9]+)', merge_vcf).group(1)
 	chr_num = str(chr_dict[chr])
 
-	ped_out = dir + 'all_zf.%s.ped' % chr
-	sites_out = dir + 'all_zf.%s.map' % chr
+	ped_out = dir + 'ped_map_files/all_zf.%s.ped' % chr
+	sites_out = dir + 'ped_map_files/all_zf.%s.map' % chr
 
 	if not os.path.isfile(sites_out):
 		print chr
@@ -58,13 +58,13 @@ for merge_vcf in merge_vcfs:
 					if len(allele) > 1:
 						indel = True
 		
+
 				# if there are exactly two alleles, then yay!
 				#       -ShapeIt cannot use fixed or multiallelic sites
 				if len(allele_counts.keys()) == 2:
 					geno = []
 					for match in re.finditer('(\S\/\S)', l):
 						geno.append(match.group(1))
-					
 					if indel:
 						tracker = 8
 						for ix, allele in enumerate(alleles):
@@ -78,9 +78,14 @@ for merge_vcf in merge_vcfs:
 							geno = [g.replace(str(ix), '%s' % allele) for g in geno]
 					geno = [g.replace('./.', '0 0') for g in geno]
 
+
+					missing = False
+					if len(filter(lambda x:'0 0' in x, geno)) == len(geno):
+						missing = True
+		
 					# this logic is sufficient because want to keep SNPs bc LDhelmet can actually use them
 					# SNPs always appear before indels in files that have both
-					if int(d[1]) not in sites:
+					if int(d[1]) not in sites and not missing:
 						genos.append(geno)
 						sites[int(d[1])] = 1
 		file.close()
