@@ -6,6 +6,7 @@ import subprocess
 import os
 import argparse
 
+
 def get_vcf(vcffile, type):
         file = gzip.open(vcffile, 'r')
         var = dict()
@@ -46,56 +47,18 @@ def get_vcf(vcffile, type):
         return var
 
 
-def get_history(b, pos, var_out, ref):
-	if b < 4:
-		if pos in var_out:
-			if len(var_out[pos]) == 1:
-				return var_out[pos].keys()[0]	
-			else:
-				return var_out[pos]
-		else:
-			return ref
-	else:
-		return 'N'
-
-
-def check_equal(iterator):
-	return len(set(iterator)) <= 1
-
-
-def call_ancestral_allele(b_in, b_out1, b_out2, b_out3, b_out4):
-	# oh no! there is variation in the outgroup
-	if not isinstance(b_out1, dict) and not isinstance(b_out2, dict):
-		if b_out1 != 'N' and b_out2 != 'N':
-			if b_out1 == b_out2:
-				if b_out1 in b_in:
-					# this is the winner. we had good coverage at both outgroups, and they
-					#	are the same fixed allele
-					return b_out1
-	far_out = []
-	for bp in (b_out3, b_out4):
-		if bp in ['A', 'T', 'C', 'G']:
-			far_out.append(bp)
-	if len(far_out) > 0:
-		if check_equal(far_out):
-			if far_out[0] in b_in:
-				return far_out[0]	
-	return 'N'
-
-
 def get_chromosome(genome, chr):
-	outfile = genome + '_' + chr
-	subprocess.call('~/bin/samtools-0.1.19/samtools faidx %s %s > %s' % (genome, chr, outfile), shell=True)
-	out_f = open(outfile, 'r')
-	locus_name = out_f.next()
-	return outfile, out_f
+        outfile = genome + '_' + chr
+        subprocess.call('~/bin/samtools-0.1.19/samtools faidx %s %s > %s' % (genome, chr, outfile), shell=True)
+        out_f = open(outfile, 'r')
+        chromosome = ''
+        locus_name = out_f.next()
+        for l in out_f:
+                chromosome = chromosome + l.rstrip()
+        out_f.close()
+        os.remove(outfile)
+        return list(chromosome)
 
-
-def pp_hist(base_info):
-	if isinstance(base_info, dict):
-		return "|".join("%s:%s" % bp_pair for bp_pair in base_info.items())
-	else:
-		return base_info
 
 def trawl_genome(out_file, chr, f_out1, f_out2, f_out3, f_out4, f_ref, var_in, var_out1, var_out2):
 	out = open(out_file, 'w')
@@ -130,48 +93,23 @@ def trawl_genome(out_file, chr, f_out1, f_out2, f_out3, f_out4, f_ref, var_in, v
 	return
 
 
-def clean_up(chr_out, f_out):
-	f_out.close()
-	os.remove(chr_out)
-	
-
 def main():
 	parser = argparse.ArgumentParser()
         parser.add_argument("--chr", help="chromosome for which to run analysis")
         args = parser.parse_args()
         chr = args.chr
 
-	vcf_in = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.filtered.recoded_biallelicSNPs.nomendel.vcf.gz' % chr
-	vcf_out1 = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.%s.filtered.coverage.vqsr.vcf.gz' % chr
-	vcf_out2 = '/mnt/gluster/home/sonal.singhal1/DBF/after_vqsr/by_chr/gatk.ug.dbf.%s.filtered.coverage.vqsr.vcf.gz' % chr
-	out_file = '/mnt/gluster/home/sonal.singhal1/ZF/ancestral_allele/ancestral_allele.%s.csv' % chr
-
-	# all genomes must be at 60chr per line!!!
-	# masked genome files for each species; genome_out1 and genome_out2 are outgroup
-	genome_out1 = '/mnt/gluster/home/sonal.singhal1/LTF/masked_genome/LTF.masked_genome.fa'
-	genome_out2 = '/mnt/gluster/home/sonal.singhal1/DBF/masked_genome/DBF.masked_genome.fa'
-	# other outgroups, even further
-	genome_out3 = '/mnt/gluster/home/sonal.singhal1/Darwin/g_magnirostris/Geospiza_magnirostris.fasta'
-	genome_out4 = '/mnt/gluster/home/sonal.singhal1/Darwin/g_fortis/Geospiza_fortis.fasta'
+	out_dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/PSMC/'
+	vcf_in = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.vqsr.vcf.gz' % chr
+	masked_genome = '/mnt/gluster/home/sonal.singhal1/ZF/masked_genome/ZF.masked_genome.fa'
 	genome_ref = '/mnt/gluster/home/sonal.singhal1/reference/taeGut1_60.bamorder.fasta'
 
-	var_in = get_vcf(vcf_in, 'in')
-	var_out1 = get_vcf(vcf_out1, 'out')
-	var_out2 = get_vcf(vcf_out2, 'out')
+	var_in = get_vcf(vcf_in)
 
-	chr_out1, f_out1 = get_chromosome(genome_out1, chr)
-	chr_out2, f_out2 = get_chromosome(genome_out2, chr)
-	chr_out3, f_out3 = get_chromosome(genome_out3, chr)
-	chr_out4, f_out4 = get_chromosome(genome_out4, chr)
-	chr_ref, f_ref = get_chromosome(genome_ref, chr)
+	chr_out1 = get_chromosome(genome_out1, chr)
+	chr_ref = get_chromosome(genome_ref, chr)
 
-	trawl_genome(out_file, chr, f_out1, f_out2, f_out3, f_out4, f_ref, var_in, var_out1, var_out2)
-	
-	clean_up(chr_out1, f_out1)
-	clean_up(chr_out2, f_out2)
-	clean_up(chr_out3, f_out3)
-	clean_up(chr_out4, f_out4)
-	clean_up(chr_ref, f_ref)
+	make_seq(var_in, chr_out1, chr_ref, out_dir)
 
 if __name__ == "__main__":
     main()

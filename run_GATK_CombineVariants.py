@@ -8,11 +8,10 @@ chrs = [ 'chr1', 'chr1A', 'chr1B', 'chr2', 'chr3', 'chr4', 'chr4A', 'chr5', 'chr
          'chrLG2', 'chrLG5', 'chrLGE22', 'chrZ' ]
 
 for chr in chrs:
-	vcf1 = '/mnt/lustre/home/sonal.singhal1/ZF/phasing/family_approach/family_vcf/by_chr/gatk.ug.zf_fam.%s.coverage.no_mendel.poly_in_any_zf.vqsr.vcf.gz' % chr
-	vcf2 = '/mnt/lustre/home/sonal.singhal1/ZF/phasing/family_approach/unrel_vcf/by_chr/gatk.ug.zf_unrel.%s.coverage.no_mendel.poly_in_any_zf.vqsr.vcf.gz' % chr
-	out = '/mnt/lustre/home/sonal.singhal1/ZF/phasing/family_approach/gatk.ug.all_zf.%s.coverage.no_mendel.vqsr.vcf.gz' % chr 
+	vcf1 = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/gatk.ug.fam_zf.%s.coverage.vqsr.vcf.gz' % chr
+	vcf2 = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/gatk.ug.unrel_zf.%s.coverage.vqsr.vcf.gz' % chr
+	out = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/gatk.ug.all_zf.%s.coverage.vqsr.vcf.gz' % chr 
 
-	call = '/home/shyamg/bin/java -Xmx5g -jar ~/bin/GenomeAnalysisTK.jar -R ~/reference/Zfinch.fa -T CombineVariants --variant %s --variant %s -o %s -genotypeMergeOptions UNSORTED' % (vcf1, vcf2, out) 
+	call = '/home/shyamg/bin/java -Xmx5g -jar ~/bin/GenomeAnalysisTK.jar -R /mnt/gluster/home/sonal.singhal1/reference/Zfinch.fa -T CombineVariants --variant %s --variant %s -o %s -genotypeMergeOptions UNSORTED' % (vcf1, vcf2, out) 
 
-	if chr == 'chr22':
-		subprocess.call('echo \"%s\" | qsub -l h_vmem=7g -cwd -V -j y -N \'%s\'' % (call, chr + 'cat_gatk'), shell=True)
+	subprocess.call('echo \"%s\" | qsub -l h_vmem=7g -cwd -V -j y -N \'%s\'' % (call, chr + 'cat_gatk'), shell=True)

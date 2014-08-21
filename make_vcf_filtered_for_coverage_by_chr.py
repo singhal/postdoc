@@ -70,7 +70,7 @@ def print_filtered_vcf(out_dir, vcf_file, ditch):
 			if d[0] != cur_chr:
 				if out_file:
 					o.close()
-				out_file = '%sgatk.ug.dbf.%s.filtered.coverage.vqsr.vcf.gz' % (out_dir, d[0])
+				out_file = '%sgatk.ug.unrel_zf.%s.coverage.vqsr.vcf.gz' % (out_dir, d[0])
 				o = gzip.open(out_file, 'w')
 				for head in header:
 					o.write(head)
@@ -91,21 +91,21 @@ def main():
         
         # vcf file with FILTERED variants only
 	# assumed to be gzipped
-	vcf_file = '/mnt/lustre/home/sonal.singhal1/DBF/after_vqsr/DB.allchrs.vqsr.filtered.snps.indels.vcf.gz'
+	vcf_file = '/mnt/gluster/home/emleffler/genotype_callsets/zebrafinch/zf_unrels/unified_genotyper/after_vqsr/gatk.ug.unrelzf.allchrs.snps.indels.vqsr2.vcf.gz'
  
         # file with coverage summary, created by 'get_average_depth.pl'
-        cov_summary = '/mnt/lustre/home/sonal.singhal1/DBF/masked_genome/doublebarred_depth_summary.txt'
+        cov_summary = '/mnt/gluster/home/sonal.singhal1/ZF/masked_genome/zebrafinch_depth_summary.txt'
         # file with average coverage data, created by 'get_average_depth.pl'
-        cov_data = '/mnt/lustre/home/sonal.singhal1/DBF/masked_genome/doublebarred_avg_depth.txt' 
+        cov_data = '/mnt/gluster/home/sonal.singhal1/ZF/masked_genome/zebrafinch_avg_depth.txt' 
 
         # out directory      
-	out_dir = '/mnt/lustre/home/sonal.singhal1/DBF/after_vqsr/by_chr/'
+	out_dir = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/'
 
         # chromosome names
         chrs = [ 'chr1', 'chr1A', 'chr1B', 'chr2', 'chr3', 'chr4', 'chr4A', 'chr5', 'chr6', 'chr7', 'chr8',
 		 'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18',
                  'chr19', 'chr20', 'chr21', 'chr22', 'chr23', 'chr24', 'chr25', 'chr26', 'chr27', 'chr28',
-                 'chrLG2', 'chrLG5', 'chrLGE22', 'chrZ', 'chrM']
+                 'chrLG2', 'chrLG5', 'chrLGE22', 'chrZ']
 	
 	avg_depth = average_depth(cov_summary)
 	ditch = ditched_sites(chrs, cov_data, avg_depth) 

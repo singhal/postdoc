@@ -4,7 +4,7 @@ import sys
 import gzip
 
 # directory with the VCF files that need to be cleaned up
-dir = '/mnt/lustre/home/sonal.singhal1/LTF/after_vqsr/by_chr/'
+dir = '/mnt/lustre/home/sonal.singhal1/DBF/after_vqsr/by_chr/'
 # glob out those VCFs that still have "bad" sites
 vcfs = []
 for vcf in glob.glob(dir + '*vcf.gz'):
