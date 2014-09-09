@@ -7,42 +7,46 @@ import os
 import argparse
 
 
-def get_vcf(vcffile, type):
+def get_vcf(vcffile):
+	code = {'A': {'A': 'A', 'C': 'M', 'G': 'R', 'T': 'W'},
+		'C': {'A': 'M', 'C': 'C', 'G': 'S', 'T': 'Y'},
+		'G': {'A': 'R', 'C': 'S', 'G': 'G', 'T': 'K'},
+		'T': {'A': 'W', 'C': 'Y', 'G': 'K', 'T': 'T'}}
+
         file = gzip.open(vcffile, 'r')
         var = dict()
+	ids = []
         for l in file:
-                if not re.match("#", l):
-                        d = re.split('\t', l)
+                if re.match('#CHROM', l):
+			d = re.split('\t', l.rstrip())
+			ids = d[9:len(d)]
+			for id in ids:
+				var[id] = dict()
+		if not re.match("#", l):
+                        d = re.split('\t', l.rstrip())
 
-                        alleles = [d[3]] + re.split(",", d[4])
+			if d[4] != '.' and d[6] == 'PASS':
+	                        alleles = [d[3]] + re.split(",", d[4])
                         
-                        # do not want to include indels in this variant dictionary
-                        # cannot use these to polarize
-                        indel = False
-                        for allele in alleles:
-                                if len(allele) > 1:
-                                        indel = True
+                        	# do not want to include indels in this variant dictionary
+                        	# cannot use these to polarize
+                        	indel = False
+                        	for allele in alleles:
+                                	if len(allele) > 1:
+                                        	indel = True
                         
-                        if not indel:
-                                # do not want any alleles included that are at zero frequency
-                                # not useful for anything but to show ref, and we already have that
-                                allele_counts = dict()
-                                for i in range(len(alleles)):
-                                        allele_counts[alleles[i]] = len(re.findall('%s\/' % i, l)) + len(re.findall('\/%s' % i, l))
-                                tot_n = sum(allele_counts.values())
-                                
-				af_real = dict()
-
-				for i in allele_counts:
-                                        af = allele_counts[i] / float(tot_n)
-                                        if af > 0:
-                                        	af_real[i] = '%.3f' % af
-				# for the ingroup, do not want to include fixed or polyallelic sites, so deal with that here
-				if type == 'in':
-					if len(af_real) == 2:
-                                		var[int(d[1])] = af_real
-				else:
-					var[int(d[1])] = af_real
+                        	if not indel:
+					all_num = dict()
+					for ix, allele in enumerate(alleles):
+						all_num[str(ix)] = allele
+                                	# populate var
+					for id, geno in zip(ids, d[9:len(d)]):
+						geno1 = re.search('(\S)\/', geno).group(1)
+						geno2 = re.search('\/(\S)', geno).group(1)
+						if geno1 != '.':
+							var[id][int(d[1]) - 1] = code[all_num[geno1]][all_num[geno2]]
+						else:
+							var[id][int(d[1]) - 1] = 'N'
         file.close()
         return var
 
@@ -60,56 +64,40 @@ def get_chromosome(genome, chr):
         return list(chromosome)
 
 
-def trawl_genome(out_file, chr, f_out1, f_out2, f_out3, f_out4, f_ref, var_in, var_out1, var_out2):
-	out = open(out_file, 'w')
-	out.write('chr,position,ingroup,outgroup1,outgroup2,faroutgroup3,faroutgroup4,ancestralallele\n')
-	for line_count, (l_out1, l_out2, l_out3, l_out4, l_ref) in enumerate(izip(f_out1, f_out2, f_out3, f_out4, f_ref)):
-		l_out1 = list(l_out1.rstrip())
-		l_out2 = list(l_out2.rstrip())
-		l_out3 = list(l_out3.upper().rstrip())
-		l_out4 = list(l_out4.upper().rstrip())
-		l_ref =  list(l_ref.upper().rstrip())
-
-		l_out1 = [int(i) for i in l_out1]
-		l_out2 = [int(i) for i in l_out2]
-
-		for ix, (b_out1, b_out2, b_out3, b_out4, b_ref) in enumerate(izip(l_out1, l_out2, l_out3, l_out4, l_ref)):
-			# get the current genome position	
-			# need to add 1 because python indexes at 0; genomes are at index 1
-			pos = line_count * 60 + ix + 1
-	
-			# this is a variable position
-			if pos in var_in:
-				b_in = var_in[pos]
-				
-				b_out1call = get_history(b_out1, pos, var_out1, b_ref)
-				b_out2call = get_history(b_out2, pos, var_out2, b_ref)
-				
-				anc_allele = call_ancestral_allele(b_in, b_out1call, b_out2call, b_out3, b_out4)
-
-				out.write('%s,%s,%s,%s,%s,%s,%s,%s\n' % \
-					(chr, pos, pp_hist(b_in), pp_hist(b_out1call), pp_hist(b_out2call), b_out3, b_out4, anc_allele))
-	out.close()
+def print_seq(var, chr_as_list, masked, out_dir, chr):
+        for ind in var:
+		out_file = '%s%s.fasta' % (out_dir, ind)
+		out_f = open(out_file, 'a')
+                out_f.write('>%s\n' % chr)
+                tmp_chr = list(chr_as_list)
+                for pos, base in enumerate(masked):
+                        if base in ['4', '5', '6', '7']:
+                                tmp_chr[pos] = 'N'
+                for pos in var[ind]:
+                        tmp_chr[pos] = var[ind][pos]
+                for i in xrange(0, len(tmp_chr), 60):
+                        out_f.write(''.join(tmp_chr[i:i+60]) + '\n')
+        out_f.close()
 	return
 
 
 def main():
-	parser = argparse.ArgumentParser()
-        parser.add_argument("--chr", help="chromosome for which to run analysis")
-        args = parser.parse_args()
-        chr = args.chr
+	chrs = [ 'chr1', 'chr1A', 'chr1B', 'chr2', 'chr3',  'chr4', 'chr4A', 'chr5', 'chr6', 'chr7', 'chr8',
+	         'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18',
+	         'chr19', 'chr20', 'chr21', 'chr22', 'chr23', 'chr24', 'chr25', 'chr26', 'chr27', 'chr28',
+	         'chrLG2', 'chrLG5', 'chrLGE22', 'chrZ' ]
 
-	out_dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/PSMC/'
-	vcf_in = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.vqsr.vcf.gz' % chr
-	masked_genome = '/mnt/gluster/home/sonal.singhal1/ZF/masked_genome/ZF.masked_genome.fa'
-	genome_ref = '/mnt/gluster/home/sonal.singhal1/reference/taeGut1_60.bamorder.fasta'
-
-	var_in = get_vcf(vcf_in)
-
-	chr_out1 = get_chromosome(genome_out1, chr)
-	chr_ref = get_chromosome(genome_ref, chr)
-
-	make_seq(var_in, chr_out1, chr_ref, out_dir)
-
+	for chr in chrs:
+		out_dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/PSMC/'
+		vcf_in = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.vqsr.vcf.gz' % chr
+		masked_genome = '/mnt/gluster/home/sonal.singhal1/ZF/masked_genome/ZF.masked_genome.fa'
+		genome_ref = '/mnt/gluster/home/sonal.singhal1/reference/taeGut1_60.bamorder.fasta'
+	
+		var = get_vcf(vcf_in)
+		masked = get_chromosome(masked_genome, chr)
+		chr_ref = get_chromosome(genome_ref, chr)
+		print_seq(var, chr_ref, masked, out_dir, chr)
+		del var
+		
 if __name__ == "__main__":
     main()

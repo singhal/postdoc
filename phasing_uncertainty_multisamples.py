@@ -143,7 +143,9 @@ def get_switch_error(out_file, snps, block_size, haps, sites, min_freq, uncertai
 						tot_inf_sites += len(hap1)
 
 					num_compare += 1
-		diff = tot_bk_pts / float(tot_inf_sites)
+		diff = 0
+		if tot_inf_sites > 1:
+			diff = tot_bk_pts / float(tot_inf_sites)
 		out_f.write('%s,%s,%s\n' % (sites[snp_start], sites[snp_end - 1], diff))
 	out_f.close()
 	return
@@ -158,7 +160,7 @@ def get_snp_count(file):
 def sample_haplotypes(chr, graph_file, n_sam):
 	out_files = []
 	for i in range(n_sam):
-		out_file = '/mnt/gluster/home/sonal.singhal1/LTF/phasing/phasing_uncertainty/samples/%s.sample%s' % (chr, i)
+		out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/phasing_uncertainty/samples/%s.sample%s' % (chr, i)
 		out_files.append(out_file + '.haps')
 		if not os.path.isfile(out_file + '.haps'):
 			subprocess.call("~/bin/shapeit_v2r790/shapeit -convert -T 8 --input-graph %s --output-sample %s --seed %s" % (graph_file, out_file, random.randint(0,1000)), shell=True)
@@ -177,9 +179,9 @@ def main():
 	min_freq = 1
 	max_uncertainty = 0
 
-	out_file = '/mnt/gluster/home/sonal.singhal1/LTF/phasing/phasing_uncertainty/switch_error_rate_%s_mf%s_uncertain%s.csv' % (chr, min_freq, max_uncertainty)
-	vcf_file = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.%s.filtered.coverage.recoded_biallelicSNPs.vqsr.vcf.gz' % chr
-	graph_file = '/mnt/gluster/home/sonal.singhal1/LTF/phasing/PIR_approach/results/%s_haplotypes.graph' % chr
+	out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/phasing_uncertainty/switch_error_rate_%s_mf%s_uncertain%s.csv' % (chr, min_freq, max_uncertainty)
+	vcf_file = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.filtered.recoded_biallelicSNPs.nomendel.vcf.gz' % chr
+	graph_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/PIR_approach/results/%s_haplotypes.graph' % chr
 
 	files = sample_haplotypes(chr, graph_file, n_sam)
 	snps = get_snp_count(files[0])
@@ -187,7 +189,7 @@ def main():
 	# uncertain = get_uncertain(phasing_file, max_uncertainty)
 	uncertain = []
 	sites = get_sites(files[0])
-	inds = range(5,45)
+	inds = range(5,43)
 	haps = get_haps(files, inds)
 	get_switch_error(out_file, snps, block_size, haps, sites, min_freq, uncertain, site_freq, inds)
 
