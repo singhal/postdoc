@@ -6,9 +6,9 @@ chrs = ['chr1', 'chr1A', 'chr1B', 'chr2', 'chr3', 'chr4', 'chr4A', 'chr5', 'chr6
 	'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18', 'chr19', 'chr20', 'chr21', 'chr22', 'chr23', 'chr24',
 	'chr25', 'chr26', 'chr27', 'chr28', 'chrLG2', 'chrLG5', 'chrLGE22']
 
-out_file = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/treemix/treemix_auts_woDBF.txt'
+out_file = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/treemix/treemix_auts_inclDBF.txt'
 out_f = open(out_file, 'w')
-out_f.write('pop1 pop2 pop3\n')
+out_f.write('pop1 pop2 pop3 pop4\n')
 
 def parse_vcf(var, vcf, popname):
 	f = gzip.open(vcf, 'r')
@@ -54,11 +54,11 @@ for chr in chrs:
 	var = {}
 	var = parse_vcf(var, zf_vcf, 'pop1')
 	var = parse_vcf2(var, ltf_vcf, 'pop2', 10, 'pop3', 10)
-	#var = parse_vcf(var, dbf_vcf, 'pop4')
+	var = parse_vcf(var, dbf_vcf, 'pop4')
 
-	for pos in var:
+	for pos in sorted(var.keys()):
 		pop_line = ''
-		for pop, count in [('pop1', 38), ('pop2', 20), ('pop3', 20)]:
+		for pop, count in [('pop1', 38), ('pop2', 20), ('pop3', 20), ('pop4', 2)]:
 			if pop in var[pos]:
 				pop_line += '%s,%s ' % (var[pos][pop][0], var[pos][pop][1])
 			else:
