@@ -7,7 +7,7 @@ import random
 
 def simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hotspot_lengths, ix):
 	
-	hotspot_file = '%shotspot_rho%s_%s.txt' % (out_dir, rho, ix)
+	hotspot_file = '%shotspot_theta%s_rho%s_%s.txt' % (out_dir, theta, rho, ix)
 	hotspot_f = open(hotspot_file, 'w')
 	num_hotspots = len(diffs) * len(hotspot_lengths)
 	starts = np.linspace(0+50e3,seq_size-50e3,num_hotspots)
@@ -18,8 +18,8 @@ def simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hot
 			hotspot_f.write('%.4f\t%.4f\t%.5f\n' % (spot_start / float(seq_size), spot_end / float(seq_size), diff))
 	hotspot_f.close()	
 
-	haplo_file = '%shaplo_rho%s_%s.fa' % (out_dir, rho, ix)
-	anc_file = '%sancallele_rho%s_%s.txt' % (out_dir, rho, ix)
+	haplo_file = '%shaplo_theta%s_rho%s_%s.fa' % (out_dir, theta, rho, ix)
+	anc_file = '%sancallele_theta%s_rho%s_%s.txt' % (out_dir, theta, rho, ix)
 	haplo_f = open(haplo_file, 'w')
 	anc_f = open(anc_file, 'w')
 
@@ -102,23 +102,20 @@ def simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hot
 
 
 def main():
-	out_dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspot_simulations/sim_10_20_40_60_80_100/'
+	out_dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspot_simulations/theta_rho/'
 	# sim MB
 	seq_size = 1000000
 	# num replicates to simulate
-	num_sim = 12
-	# num_sim = 1
+	num_sim = 5
 	# hotspot / coldspot difference, > 1
 	diffs = [10, 10, 20, 20, 40, 40, 60, 60, 80, 80, 100, 100]
-	# diffs = [10]
-	# mean rho values
-	rhos = [0.1,0.2,0.4,0.6,0.8,1.0]
-	# rhos = [0.0001]
 	# hotspot length
 	hotspot_lengths = [2000]
 	# hotspot_lengths = [1000]
 	# theta (per bp!)
-	theta = 0.0135
+	thetas = [0.0075, 0.014, 0.02]
+	# rho, given in terms of theta
+	rhos = [0.01, 0.1, 1, 10, 100]
 	# number of haplotypes to sample
 	nsam = 38
 	# A, C, T, G
@@ -129,9 +126,11 @@ def main():
                      'G': {'A': 0.659, 'C': 0.135, 'T': 0.206},
                      'T': {'A': 0.215, 'C': 0.600, 'G': 0.185}}
 	
-	for rho in rhos:
-		for ix in range(num_sim):
-			simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hotspot_lengths, ix)
+	for theta in thetas:
+		for rho_multiplier in rhos:
+			rho = theta * rho_multiplier
+			for ix in range(num_sim):
+				simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hotspot_lengths, ix)
 	
 
 if __name__ == "__main__":

@@ -8,11 +8,11 @@ parser.add_argument("--chr", help="chromosome for which to run analysis")
 args = parser.parse_args()
 chr = args.chr
 
-vcffile = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.filtered.vqsr.vcf.gz' % chr
+vcffile = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.repeatmasked.vqsr.vcf.gz' % chr
 
 for vcf in [vcffile]:
 	infile = gzip.open(vcf, 'r')
-	vcfout = vcf.replace('coverage.filtered.vqsr', 'coverage.filtered.recoded_biallelicSNPs.nomendel')
+	vcfout = vcf.replace('coverage.repeatmasked.vqsr', 'coverage.repeatmasked.filtered.recoded_biallelicSNPs.nomendel')
 	outfile = gzip.open(vcfout, 'w')
 
 	errorfile = '/mnt/gluster/home/sonal.singhal1/ZF/mendelian_errors/plink_results/all_zf.me.%s.mendel' % chr

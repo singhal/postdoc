@@ -46,7 +46,7 @@ for gen in genome:
 	gen.close()					
 
 snps_id = {}
-out_file = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/all_species.var.geno'
+out_file = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/all_species.geno'
 out = open(out_file, 'w')
 
 for chr in chrs:
@@ -84,6 +84,5 @@ for chr in snps_id:
 		for species in ['DBF', 'ZF', 'LTF']:
 			for bp in snps_id[chr][pos][species]:
 				snps += str(bp)
-		if ( snps.count('0') / float(len(snps)) ) < 0.95:
-			out.write(snps + '\n')
+		out.write(snps + '\n')
 out.close()

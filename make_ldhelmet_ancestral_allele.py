@@ -1,17 +1,21 @@
 import re
 import glob
+import argparse
 
-chrs = [ 'chr1', 'chr1A', 'chr1B', 'chr2', 'chr3',  'chr4', 'chr4A', 'chr5', 'chr6', 'chr7', 'chr8',
-         'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18',
-         'chr19', 'chr20', 'chr21', 'chr22', 'chr23', 'chr24', 'chr25', 'chr26', 'chr27', 'chr28',
-         'chrLG2', 'chrLG5', 'chrLGE22', 'chrZ' ]
+parser = argparse.ArgumentParser()
+parser.add_argument("--chr", help="chromosome for which to run")
+parser.add_argument("--sp", help="species for which to run")
+args = parser.parse_args()
+
+chr = args.chr
+sp = args.sp
 
 nuc = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
 
-for chr in chrs:
-	aa_file = '/mnt/gluster/home/sonal.singhal1/ZF/ancestral_allele/ancestral_allele.%s.csv' % chr
-	sites_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/PIR_approach/%s_sites.csv' % chr
-	out_file = '/mnt/gluster/home/sonal.singhal1/ZF/ancestral_allele/ancestral_allele.%s.ldhelmet.txt' % chr
+for chr in [chr]:
+	aa_file = '/mnt/gluster/home/sonal.singhal1/%s/ancestral_allele/ancestral_allele.%s.csv' % (sp, chr)
+	sites_file = '/mnt/gluster/home/sonal.singhal1/%s/phasing/PIR_approach/%s_sites.csv' % (sp, chr)
+	out_file = '/mnt/gluster/home/sonal.singhal1/%s/ancestral_allele/ancestral_allele.%s.ldhelmet.txt' % (sp, chr)
 
 	anc_info = {}
 	

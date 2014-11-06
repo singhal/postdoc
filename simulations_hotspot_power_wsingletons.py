@@ -10,7 +10,7 @@ def simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hot
 	hotspot_file = '%shotspot_rho%s_%s.txt' % (out_dir, rho, ix)
 	hotspot_f = open(hotspot_file, 'w')
 	num_hotspots = len(diffs) * len(hotspot_lengths)
-	starts = np.linspace(0+50e3,seq_size-50e3,num_hotspots)
+	starts = np.linspace(0+20e3,seq_size-20e3,num_hotspots)
 	for i, diff in enumerate(diffs):
 		for j, length in enumerate(hotspot_lengths):
 			spot_start = starts[j + i * len(hotspot_lengths)]
@@ -27,6 +27,7 @@ def simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hot
 
 	positions = []
 	haplo = []
+
 	for l in macs.stdout:
 		if re.match('^positions:', l):
 			positions = [float(match) for match in re.findall('([\d\.e-]+)', l)]
@@ -35,36 +36,17 @@ def simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hot
 	haplo = haplo[(len(haplo) - nsam):len(haplo)]
 	for ix, hap in enumerate(haplo):
 		haplo[ix] = list(hap)
-	# these don't have singletons
-	singletons = []
-	positions_pruned = []
-	haplo_pruned = []
-	for ix, pos in enumerate(positions):
-		allele_count = 0
-		for hap in haplo:
-			if hap[ix] == '1':
-				allele_count += 1
-		if allele_count <= 1:
-			singletons.append(ix)
 
+	positions_changed = []
 	for ix, pos in enumerate(positions):
-		if ix not in singletons:
-			pos = int(round(pos * seq_size)) - 1 
-			if pos < 0:
-	                        pos = 0
-        	        if pos > (seq_size -1):
-                	        pos = seq_size - 1
-			positions_pruned.append(pos)
+		pos = int(round(pos * seq_size)) - 1 
+		if pos < 0:
+			pos = 0
+		if pos > (seq_size - 1):
+			pos = seq_size - 1
+		positions_changed.append(pos)
 	
-	for ix1, hap in enumerate(haplo):
-		haplo_pruned.append([])
-		for ix2, pos in enumerate(hap):
-			if ix2 not in singletons:
-				haplo_pruned[ix1].append(pos)
-
 	del positions
-	del haplo
-	del singletons
 	
 	bases = []
 	for base, freq in eq_freq.items():
@@ -75,7 +57,7 @@ def simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hot
 
 	mutations = {}
 	
-	for pos in positions_pruned:
+	for pos in positions_changed:
 		anc = seq[pos]
 		ran_num = random.random()
 		for base, prob in mut_rates[anc].items():
@@ -90,11 +72,11 @@ def simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hot
 				break
 	anc_f.close()
 
-	for ind, ind_hap in enumerate(haplo_pruned):
+	for ind, ind_hap in enumerate(haplo):
 		tmp_seq = seq[:]
 		for hap_ix, bp in enumerate(ind_hap):
 			if bp == '1':
-				tmp_seq[positions_pruned[hap_ix]] = mutations[positions_pruned[hap_ix]][1]
+				tmp_seq[positions_changed[hap_ix]] = mutations[positions_changed[hap_ix]][1]
 		haplo_f.write('>haplo%s\n' % ind)
 		for seq_i in xrange(0, len(tmp_seq), 60):
 			haplo_f.write('%s\n' % ''.join(tmp_seq[seq_i:seq_i+60]))
@@ -102,20 +84,20 @@ def simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hot
 
 
 def main():
-	out_dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspot_simulations/sim_10_20_40_60_80_100/'
+	out_dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspot_simulations_wsingletons/'
 	# sim MB
 	seq_size = 1000000
 	# num replicates to simulate
-	num_sim = 12
+	num_sim = 1
 	# num_sim = 1
 	# hotspot / coldspot difference, > 1
-	diffs = [10, 10, 20, 20, 40, 40, 60, 60, 80, 80, 100, 100]
+	diffs = [2, 3, 5, 10, 50, 100]
 	# diffs = [10]
 	# mean rho values
-	rhos = [0.1,0.2,0.4,0.6,0.8,1.0]
+	rhos = [0.0001, 0.001, 0.01, 0.1, 1.0, 2.5]
 	# rhos = [0.0001]
 	# hotspot length
-	hotspot_lengths = [2000]
+	hotspot_lengths = [1000, 2000]
 	# hotspot_lengths = [1000]
 	# theta (per bp!)
 	theta = 0.0135

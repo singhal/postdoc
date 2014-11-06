@@ -2,11 +2,21 @@ import glob
 import sys
 import re
 import gzip
+import argparse
 
-min_allele = 1
-dir = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/'
-out = '/mnt/gluster/home/sonal.singhal1/ZF/segregating_sites_af%s.txt' % min_allele
-vcfs = glob.glob(dir + '*biallelic*.vcf.gz')
+parser = argparse.ArgumentParser()
+parser.add_argument("--sp", help="species [ZF|LTF]")
+parser.add_argument("--min_allele", help="min allele count to be considered SS")
+args = parser.parse_args()
+
+sp = args.sp
+min_allele = int(args.min_allele)
+
+if sp == 'ZF':
+	vcfs = glob.glob('/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/*biallelic*.vcf.gz')
+if sp == 'LTF':
+	vcfs = glob.glob('/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/*biallelic*.vcf.gz')
+out = '/mnt/gluster/home/sonal.singhal1/%s/analysis/segregatingsites_af%s.txt' % (sp, min_allele)
 
 o = open(out, 'w')
 for vcf in vcfs:
@@ -31,5 +41,4 @@ for vcf in vcfs:
 					seg_sites += 1
 	o.write("%s\t%s\n" % (vcf, seg_sites))
 	infile.close()
-o.close() 
-					
+o.close()

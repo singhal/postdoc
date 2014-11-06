@@ -52,7 +52,7 @@ def print_seq(var, chr_as_list, masked, out_file):
 		out_f.write('>haplo%s\n' % ind)
 		tmp_chr = list(chr_as_list)
 		for pos, base in enumerate(masked):
-			if base in ['4', '5', '6', '7']:
+			if base in ['4', '5', '6', '7', '8']:
 				tmp_chr[pos] = 'N'
 		for pos in var[ind]:
                         tmp_chr[pos] = var[ind][pos]
@@ -70,7 +70,7 @@ def main():
 	hap_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/PIR_approach/results/%s_haplotypes.haps' % chr
 	out_file = '/mnt/gluster/home/sonal.singhal1/gene_trees/ZF_%s_haplotypes.fasta' % chr
 	genome = '/mnt/gluster/home/sonal.singhal1/reference/taeGut1.bamorder.fasta'
-	masked_genome = '/mnt/gluster/home/sonal.singhal1/ZF/masked_genome/ZF.masked_genome.fa'
+	masked_genome = '/mnt/gluster/home/sonal.singhal1/ZF/masked_genome/ZF.masked_genome.repeat_masked.fa'
 	
 	chr_as_list = get_chromosome(genome, chr)
 	masked = get_chromosome(masked_genome, chr)

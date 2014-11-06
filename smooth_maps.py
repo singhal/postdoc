@@ -3,11 +3,11 @@ import argparse
 import numpy as np
 from itertools import izip
 
-def find_hotspots(file, out, chr, block_size, flank_size):
+def find_hotspots(file, out, chr, block_size):
 	d = pd.read_csv(file, sep=" ", skiprows=3, header=None, 
 		names=['left_snp', 'right_snp', 'meanrho', 'p0.05', 'p0.95'])
 	o = open(out, 'w')
-	o.write('chr,block_start,block_end,flank_rate,block_rate,rate_ratio\n')
+	o.write('chr,window_start,window_end,rate\n')
 
 	chr_lengths = { 'chr10': 20806668, 'chr11': 21403021, 'chr12': 21576510, 'chr13': 16962381,
                 'chr14': 16419078, 'chr15': 14428146, 'chr16': 9909, 'chr17': 11648728,
@@ -22,23 +22,16 @@ def find_hotspots(file, out, chr, block_size, flank_size):
 	chr_start = 0
 	chr_end = chr_lengths[chr]
 
-	for block_start in range(chr_start, chr_end, int(block_size / 2.0)):
+	for block_start in range(chr_start, chr_end, block_size):
                 block_end = block_start + block_size
                 if block_end > chr_end:
                         block_end = chr_end
 
-                left_flank_start = chr_start
-                if (block_start - flank_size) >= left_flank_start:
-                        left_flank_start = block_start - flank_size
-                tmp = d[d.right_snp >= left_flank_start]
-
-                right_flank_end = chr_end
-                if (block_end + flank_size) <= right_flank_end:
-                        right_flank_end = block_end + flank_size
-                tmp = tmp[tmp.left_snp <= right_flank_end]
+                tmp = d[d.right_snp >= block_start]
+                tmp = tmp[tmp.left_snp <= block_end]
                 
-                chunk_rho = {'left': {'bp': 0, 'rho': 0}, 'block': {'bp': 0, 'rho': 0}, 'right': {'bp': 0, 'rho': 0}}
-                chunks = {'left': [int(left_flank_start), int(block_start)], 'block': [int(block_start), int(block_end)], 'right': [int(block_end), int(right_flank_end)]}
+                chunk_rho = {'block': {'bp': 0, 'rho': 0}}
+                chunks = {'block': [int(block_start), int(block_end)]}
 		
                 for start, end, rate in izip(tmp.left_snp, tmp.right_snp, tmp.meanrho):
                         start = int(start)
@@ -66,40 +59,31 @@ def find_hotspots(file, out, chr, block_size, flank_size):
                                 chunk_rho[chunk]['rho'] += rate_mult
                                 chunk_rho[chunk]['bp'] += diff
 
-
-		flank_rate = 'NA'
 		block_rate = 'NA'
-		diff = 'NA'
-		if (chunk_rho['left']['bp'] + chunk_rho['right']['bp']) > 0:
-			flank_rate = '%.5f' % ((chunk_rho['left']['rho'] + chunk_rho['right']['rho']) / float(chunk_rho['left']['bp'] + chunk_rho['right']['bp']))
+
 		if chunk_rho['block']['bp'] > 0:
                 	block_rate = '%.5f' % (chunk_rho['block']['rho'] / chunk_rho['block']['bp'])
-		if block_rate != 'NA' and flank_rate != 'NA':	
-			if float(flank_rate) > 0:
-				diff = '%.5f' % (float(block_rate) / float(flank_rate))       
 
-                o.write('%s,%s,%s,%s,%s,%s\n' % (chr, block_start, block_end, flank_rate, block_rate, diff))
+                o.write('%s,%s,%s,%s\n' % (chr, block_start, block_end, block_rate))
 	o.close()
 	return
 	
 def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--chr", help="chromosome for which to run analysis")
-	parser.add_argument("--block", help="size in bp for block size to evaluate as putative hotspot")
-	parser.add_argument("--flank", help="size in bp for flank size to evaluate on either side of hotspot")	
+	parser.add_argument("--window", help="size in bp for window to smooth values")
 	parser.add_argument("--sp", help="species [ZF|LTF] for which to run")
 
 	args = parser.parse_args()
 	chr = args.chr
-	block_size = int(args.block)
-	flank_size = int(args.flank)
+	block_size = int(args.window)
 	sp = args.sp
 	
 	dir = '/mnt/gluster/home/sonal.singhal1/%s/analysis/LDhelmet/' % (sp)
-	out = '%sputative_hotspots/%s.putativehotspots.block%s_flank%s.out' % (dir, chr, block_size, flank_size)
-	file = '%smaps/%s_recombination_bpen5.rm.txt' % (dir, chr)
+	out = '%smaps/%s.window%s.bpen100.rm.txt' % (dir, chr, block_size)
+	file = '%smaps/%s_recombination_bpen100.rm.txt' % (dir, chr)
 
-	find_hotspots(file, out, chr, block_size, flank_size) 
+	find_hotspots(file, out, chr, block_size) 
 
 if __name__ == "__main__":
     main()

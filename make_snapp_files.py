@@ -61,21 +61,15 @@ for chr in chrs:
 					for geno in d[9:]:
 						geno1 = re.search('(\S)\/', geno).group(1)
                                                 geno2 = re.search('\/(\S)', geno).group(1)
+					
+						geno_pick = random.choice([geno1, geno2])
 
-						if geno1 == '0':
+						if geno_pick == '0':
 							snps_id[chr][pos][sp].append(d[3])
-						elif geno1 == '1':
+						elif geno_pick == '1':
 							snps_id[chr][pos][sp].append(d[4])
 						else:
 							snps_id[chr][pos][sp].append('?')
-
-						if geno2 == '0':
-                                                        snps_id[chr][pos][sp].append(d[3])
-                                                elif geno2 == '1':
-                                                        snps_id[chr][pos][sp].append(d[4])
-                                                else:
-                                                        snps_id[chr][pos][sp].append('?')
-
 		f.close()
 
 for chr in snps_id:

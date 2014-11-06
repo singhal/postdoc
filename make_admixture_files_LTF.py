@@ -28,7 +28,6 @@ for chr in chrs:
 						snp += '2'
 					else:
 						snp += '9'
-				if ( snp.count('2') / float(len(snp)) ) < 0.90:
-					out.write(snp + '\n')
+				out.write(snp + '\n')
 	f.close()
 out.close()

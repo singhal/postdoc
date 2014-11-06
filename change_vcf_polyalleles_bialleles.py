@@ -2,11 +2,11 @@ import re
 import gzip
 import glob
 
-vcfs = glob.glob('/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/*coverage.vqsr*')
+vcfs = glob.glob('/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/*coverage.repeatmasked.vqsr*')
 
 for vcf in vcfs:
 	infile = gzip.open(vcf, 'r')
-	vcfout = vcf.replace('coverage', 'coverage.recoded_biallelicSNPs')
+	vcfout = vcf.replace('repeatmasked', 'repeatmasked.recoded_biallelicSNPs')
 	outfile = gzip.open(vcfout, 'w')
 
 	for l in infile:
