@@ -4,9 +4,12 @@ import numpy as np
 from itertools import izip
 
 gff = '/mnt/gluster/home/sonal.singhal1/reference/Taeniopygia_guttata.gff'
+# long autosomal chromosomes
 chrs = ['13', '11', '5', '7', '6', '1A', '4', '3', '2', '1', '8']
 file_base = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/LDhelmet/maps/chr%s_recombination_bpen100.rm.txt'
-out = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/TSS/rho_near_TSS.csv'
+out = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/TSS/rho_near_TSS_1000kb.csv'
+# plot 10^scale Kb
+scale = 3
 
 chr_lengths = { '10': 20806668, '11': 21403021, '12': 21576510, '13': 16962381,
                 '14': 16419078, '15': 14428146, '16': 9909, '17': 11648728,
@@ -30,17 +33,19 @@ genes = d[ d.cds_mrna == 'mRNA' ].id.unique()
 tss = {}
 for gene in genes:
 	chr = gdata['chr'][gene]
+	orientation = 1
 	if chr not in tss:
 		tss[ chr ] = {}
 	if gdata['orientation'][gene] == '+':
 		tss_start = gdata['start'][gene]
 	elif gdata['orientation'][gene]  == '-':
 		tss_start = gdata['stop'][gene]
-	tss[ chr ][ tss_start ] = 1
+		orientation = -1
+	tss[ chr ][ tss_start ] = orientation
 	
-negative = [-1 * x for x in np.logspace(0, 3, num=30)]
+negative = [-1 * x for x in np.logspace(0, scale, num=30)]
 negative.reverse()
-bins =  negative + [0] + np.logspace(0, 3, num=30).tolist()
+bins =  negative + [0] + np.logspace(0, scale, num=30).tolist()
 bins = [ int(x * 1000) for x in bins]
 
 o = open(out, 'w')
@@ -65,9 +70,11 @@ for chr in chrs:
 						sum((group.right_snp - group.left_snp))
 
 				if ix < len(bins):
-					leftbin = bins[ix - 1]
-					rightbin = bins[ix]
+					leftbin = bins[ix - 1] * tss[chr][start]
+					rightbin = bins[ix] * tss[chr][start]
+					
+					rangebin = sorted([leftbin, rightbin])
 					
 					o.write('%s,%s,%s,%s,%s,%s\n' % 
-							(chr, start, leftbin, rightbin, global_rho, mean_rho)) 				
+							(chr, start, rangebin[0], rangebin[1], global_rho, mean_rho)) 				
 o.close()

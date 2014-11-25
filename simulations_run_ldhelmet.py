@@ -26,5 +26,5 @@ for bpen in [5]:
 
 		if not os.path.isfile(out):
 			call = '/mnt/lustre/home/sonal.singhal1/bin/LDhelmet_v1.6/ldhelmet rjmcmc --num_threads 12 -o %s -n 1000000 --burn_in 100000 -b %s -s %s -l %s -p %s -a %s -m /mnt/gluster/home/sonal.singhal1/ZF/analysis/mutation_matrix.txt -w 50' % (out, bpen, fasta_file, lk, pade, ancestral)
-			#print call
-			subprocess.call('echo \"%s\" | qsub -l h_vmem=15g -cwd -V -j y -N s%s_%s' % (call, bpen, ix), shell=True)
+			print call
+			# subprocess.call('echo \"%s\" | qsub -l h_vmem=15g -cwd -V -j y -N s%s_%s' % (call, bpen, ix), shell=True)

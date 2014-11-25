@@ -84,7 +84,7 @@ def get_haps(files, inds):
 
 	for file in files:
 	        f1 = open(file, 'r')
-	
+		print file	
 	        tmp_haps = {}
 	        for ind in inds:
 	                tmp_haps[ind] = list()
@@ -157,10 +157,10 @@ def get_snp_count(file):
 	return snps
 
 
-def sample_haplotypes(chr, graph_file, n_sam):
+def sample_haplotypes(sp, chr, graph_file, n_sam):
 	out_files = []
 	for i in range(n_sam):
-		out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/phasing_uncertainty/samples/%s.sample%s' % (chr, i)
+		out_file = '/mnt/gluster/home/sonal.singhal1/%s/phasing/phasing_uncertainty/samples/%s.sample%s' % (sp, chr, i)
 		out_files.append(out_file + '.haps')
 		if not os.path.isfile(out_file + '.haps'):
 			subprocess.call("~/bin/shapeit_v2r790/shapeit -convert -T 8 --input-graph %s --output-sample %s --seed %s" % (graph_file, out_file, random.randint(0,1000)), shell=True)
@@ -171,25 +171,38 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--chr", help="chromosome for which to run analysis")
 	parser.add_argument("--samples", help="number of samples for which to run analysis")
+	parser.add_argument("--sp", help="species for which to run the analysis")
 	args = parser.parse_args()
 	chr = args.chr
         n_sam = int(args.samples)
+	sp = args.sp
 
 	block_size = 50
 	min_freq = 1
 	max_uncertainty = 0
 
-	out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/phasing_uncertainty/switch_error_rate_%s_mf%s_uncertain%s.csv' % (chr, min_freq, max_uncertainty)
-	vcf_file = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.filtered.recoded_biallelicSNPs.nomendel.vcf.gz' % chr
-	graph_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/PIR_approach/results/%s_haplotypes.graph' % chr
+	out_file = '/mnt/gluster/home/sonal.singhal1/%s/phasing/phasing_uncertainty/switch_error_rate_%s_mf%s_uncertain%s.csv' % (sp, chr, min_freq, max_uncertainty)
+	if sp == 'ZF':
+		vcf_file = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/for_shapeit/gatk.ug.unrel_zf.%s.coverage.repeatmasked.filtered.recoded_biallelicSNPs.nomendel.vcf.gz' % chr
+		inds = range(5, 43)
+		if chr == 'chrZ':
+			vcf_file = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/for_shapeit/gatk.ug.unrel_zf.chrZ.coverage.repeatmasked.filtered.recodedsex.recoded_biallelicSNPs.nomendel.males.vcf.gz'
+			inds = range(5, 23)
+	if sp == 'LTF':
+		vcf_file = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/for_shapeit/gatk.ug.ltf.%s.filtered.coverage.repeatmasked.recoded_biallelicSNPs.vqsr.vcf.gz' % chr
+		inds = range(5, 45)
+		if chr == 'chrZ':
+			vcf_file = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/for_shapeit/gatk.ug.ltf.chrZ.filtered.coverage.repeatmasked.recodedsex.recoded_biallelicSNPs.males.vcf.gz'
+			inds = range(5, 29)
 
-	files = sample_haplotypes(chr, graph_file, n_sam)
+	graph_file = '/mnt/gluster/home/sonal.singhal1/%s/phasing/PIR_approach/results/%s_haplotypes.graph' % (sp, chr)
+
+	files = sample_haplotypes(sp, chr, graph_file, n_sam)
 	snps = get_snp_count(files[0])
 	site_freq = get_vcf_var(vcf_file)
 	# uncertain = get_uncertain(phasing_file, max_uncertainty)
 	uncertain = []
 	sites = get_sites(files[0])
-	inds = range(5,43)
 	haps = get_haps(files, inds)
 	get_switch_error(out_file, snps, block_size, haps, sites, min_freq, uncertain, site_freq, inds)
 

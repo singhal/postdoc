@@ -16,12 +16,22 @@ def parse_vcf(var, vcf, popname):
 		if not re.search('^#', l):
 			d = re.split('\t', l)
 			pos = int(d[1])
-			if pos not in var:
-				var[pos] = {'ref': d[3], 'alt': d[4]}
-			if var[pos]['alt'] == d[4] and var[pos]['ref'] == d[3]:
-				ref = len(re.findall('0/', l)) + len(re.findall('/0', l))
-				alt = len(re.findall('1/', l)) + len(re.findall('/1', l)) 
-				var[pos][popname] = [ref, alt]
+			# easiest way to get biallelic SNPs
+			if len(d[3]) == 1 and len(d[4]) == 1:
+				if pos not in var:
+					var[pos] = {'ref': d[3], 'alt': d[4]}
+				if var[pos]['alt'] == d[4] and var[pos]['ref'] == d[3]:
+					ref = 0
+					alt = 0
+					for geno in d[9:]:
+						geno = re.search('^([^:]+)', geno).group(1)
+						geno = re.split('[\||/]', geno)
+						for allele in geno:
+							if allele == '0':
+								ref += 1
+							else:
+								alt += 1	
+					var[pos][popname] = [ref, alt]
 	f.close()
 	return var
 
@@ -32,24 +42,41 @@ def parse_vcf2(var, vcf, popname1, num1, popname2, num2):
                 if not re.search('^#', l):
                         d = re.split('\t', l)
                         pos = int(d[1])
-                        if pos not in var:
-                                var[pos] = {'ref': d[3], 'alt': d[4]}
-                        if var[pos]['alt'] == d[4] and var[pos]['ref'] == d[3]:
-                                ref = len(re.findall('0/', '\t'.join(d[9:9+num1]))) + len(re.findall('/0', '\t'.join(d[9:9+num1])))
-                                alt = len(re.findall('1/', '\t'.join(d[9:9+num1]))) + len(re.findall('/1', '\t'.join(d[9:9+num1])))
-                                var[pos][popname1] = [ref, alt]
-				
-				ref = len(re.findall('0/', '\t'.join(d[9+num1:9+num1+num2]))) + len(re.findall('/0', '\t'.join(d[9+num1:9+num1+num2])))
-                                alt = len(re.findall('1/', '\t'.join(d[9+num1:9+num1+num2]))) + len(re.findall('/1', '\t'.join(d[9+num1:9+num1+num2])))               
-				var[pos][popname2] = [ref, alt]
+			if len(d[3]) == 1 and len(d[4]) == 1:
+                        	if pos not in var:
+                                	var[pos] = {'ref': d[3], 'alt': d[4]}
+                        	if var[pos]['alt'] == d[4] and var[pos]['ref'] == d[3]:
+                        		ref = 0
+                                        alt = 0
+                                        for geno in d[9:9+num1]:
+                                                geno = re.search('^([^:]+)', geno).group(1)
+                                                geno = re.split('[\||/]', geno)
+                                                for allele in geno:
+                                                        if allele == '0':
+                                                                ref += 1
+                                                        else:
+                                                                alt += 1
+                                        var[pos][popname1] = [ref, alt]
+
+					ref = 0 
+                                        alt = 0 
+                                        for geno in d[9+num1:9+num1+num2]:
+                                                geno = re.search('^([^:]+)', geno).group(1)
+                                                geno = re.split('[\||/]', geno)
+                                                for allele in geno:
+                                                        if allele == '0':
+                                                                ref += 1
+                                                        else:
+                                                                alt += 1
+                                        var[pos][popname2] = [ref, alt]
         f.close()
         return var
 
 
 for chr in chrs:
-	zf_vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.filtered.recoded_biallelicSNPs.nomendel.vcf.gz' % chr
-	ltf_vcf = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.%s.filtered.coverage.recoded_biallelicSNPs.vqsr.vcf.gz' % chr
-	dbf_vcf = '/mnt/gluster/home/sonal.singhal1/DBF/after_vqsr/by_chr/gatk.ug.dbf.%s.filtered.coverage.biallelicSNPs.vqsr.vcf.gz' % chr
+	zf_vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.repeatmasked.filtered.nomendel.phased.vcf.gz' % chr
+	ltf_vcf = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.%s.filtered.coverage.repeatmasked.vqsr.phased.vcf.gz' % chr
+	dbf_vcf = '/mnt/gluster/home/sonal.singhal1/DBF/after_vqsr/by_chr/gatk.ug.dbf.%s.filtered.coverage.vqsr.vcf.gz' % chr
 
 	var = {}
 	var = parse_vcf(var, zf_vcf, 'pop1')
