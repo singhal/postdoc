@@ -75,11 +75,11 @@ def print_seq(var, chr_as_list, masked, out_file):
 	for ind in var:
 		out_f.write('>haplo%s\n' % ind)
 		tmp_chr = list(chr_as_list)
-		for pos, base in enumerate(masked):
-			if base in ['4', '5', '6', '7']:
-				tmp_chr[pos] = 'N'
 		for pos in var[ind]:
-                        tmp_chr[pos] = var[ind][pos]
+			tmp_chr[pos] = var[ind][pos]
+		for pos, base in enumerate(masked):
+			if int(base) > 3:
+				tmp_chr[pos] = 'N'
 		for i in xrange(0, len(tmp_chr), 60):
         		out_f.write(''.join(tmp_chr[i:i+60]) + '\n')
 	out_f.close()
@@ -91,12 +91,12 @@ def main():
         args = parser.parse_args()
         chr = args.chr
 
-	vcf_file = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.filtered.recoded_biallelicSNPs.nomendel.vcf.gz' % chr
+	vcf_file = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/for_shapeit/gatk.ug.unrel_zf.%s.coverage.repeatmasked.filtered.recoded_biallelicSNPs.nomendel.vcf.gz' % chr
 	hap_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/PIR_approach/results/%s_haplotypes.haps' % chr
 	out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/PIR_approach/%s_haplotypes.fasta' % chr
 	site_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/PIR_approach/%s_sites.csv' % chr
 	genome = '/mnt/gluster/home/sonal.singhal1/reference/taeGut1.bamorder.fasta'
-	masked_genome = '/mnt/gluster/home/sonal.singhal1/ZF/masked_genome/ZF.masked_genome.fa'
+	masked_genome = '/mnt/gluster/home/sonal.singhal1/ZF/masked_genome/ZF.masked_genome.repeat_masked.fa'
 	min_allele = 1
 
 	site_freq = get_vcf_var(vcf_file, min_allele)

@@ -4,7 +4,7 @@ import subprocess
 import gzip
 
 repeat = '/mnt/gluster/home/sonal.singhal1/reference/taeGut1.repeatMaskerBlast.repeatLibrary20140131.out'
-vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.vqsr.vcf.gz' 
+vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/gatk.ug.all_zf.%s.coverage.filtered.vqsr.vcf.gz' 
 
 chrs = { 'chr10': 20806668, 'chr11': 21403021, 'chr12': 21576510, 'chr13': 16962381,
                 'chr14': 16419078, 'chr15': 14428146, 'chr16': 9909, 'chr17': 11648728,
@@ -33,7 +33,7 @@ f.close()
 
 for chr in chrs:
 	vcffile = vcf % chr
-	out = vcffile.replace('coverage', 'coverage.repeatmasked')
+	out = vcffile.replace('coverage.filtered', 'coverage.filtered.repeatmasked')
 	
 	f = gzip.open(vcffile, 'r')
 	o = gzip.open(out, 'w')
@@ -43,11 +43,12 @@ for chr in chrs:
 		if re.search('^#', l):
 			o.write(l + '\n')
 		else:
-			d = re.split('\t', l)
-			if d[0] in repeats:
-				if d[1] not in repeats[d[0]]:
+			if re.search('PASS', l):
+				d = re.split('\t', l)
+				if d[0] in repeats:
+					if d[1] not in repeats[d[0]]:
+						o.write(l + '\n')
+				else:
 					o.write(l + '\n')
-			else:
-				o.write(l + '\n')
 	f.close()
 	o.close()

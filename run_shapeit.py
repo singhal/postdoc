@@ -1,10 +1,11 @@
 import subprocess
 import re
 
+# no chromosome Z!!!
 chrs = [ 'chr1', 'chr1A', 'chr1B', 'chr2', 'chr3',  'chr4', 'chr4A', 'chr5', 'chr6', 'chr7', 'chr8',
          'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18',
          'chr19', 'chr20', 'chr21', 'chr22', 'chr23', 'chr24', 'chr25', 'chr26', 'chr27', 'chr28',
-         'chrLG2', 'chrLG5', 'chrLGE22', 'chrZ' ]
+         'chrLG2', 'chrLG5', 'chrLGE22' ]
 
 chrs_long = ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr1A']
 
@@ -52,16 +53,16 @@ bam_files = {   '73783': '/mnt/gluster/data/internal_restricted_supp/finches_201
 '''
 
 dir = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/PIR_approach/'
-vcf_dir = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/'
+vcf_dir = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/for_shapeit/'
 
-for chr in ['chr27']:
+for chr in chrs:
 	bam_list = dir + chr + '_bamlist'
 	o = open(bam_list, 'w')
 	for bam in bam_files:
 		o.write("%s\t%s\t%s\n" % (bam, bam_files[bam], chr))
 	o.close()
 	
-	vcf_file = vcf_dir + 'gatk.ug.unrel_zf.%s.coverage.filtered.recoded_biallelicSNPs.nomendel.vcf.gz' % chr
+	vcf_file = vcf_dir + 'gatk.ug.unrel_zf.%s.coverage.repeatmasked.filtered.recoded_biallelicSNPs.nomendel.vcf.gz' % chr
 	pir_out = dir + chr + '_PIRlist'	
 	hap_out = dir + chr + '_haplotypes'
 
@@ -72,9 +73,9 @@ for chr in ['chr27']:
 
 	subprocess.call('chmod a+x %s' % job_file, shell=True)
 	if chr in chrs_long:
-		subprocess.call('echo "%s" | qsub -l h_vmem=10g -cwd -V -j y -N "PIR_L%s"' % (job_file, chr), shell=True)
+		subprocess.call('echo "%s" | qsub -l h_vmem=10g -cwd -V -j y -N "PIR_Z%s"' % (job_file, chr), shell=True)
 	else:
-		subprocess.call('echo "%s" | qsub -l h_vmem=3g -cwd -V -j y -N "PIR_L%s"' % (job_file, chr), shell=True)
+		subprocess.call('echo "%s" | qsub -l h_vmem=3g -cwd -V -j y -N "PIR_Z%s"' % (job_file, chr), shell=True)
 
 	
 	#call = '/mnt/lustre/home/sonal.singhal1/bin/shapeit_v2r790/shapeit -assemble --input-vcf %s --input-pir %s -O %s -L %s --window 0.5 --thread 8 --rho 0.0008 --output-graph %s' % (vcf_file, pir_out, hap_out, hap_out + '.log', hap_out + '.graph')

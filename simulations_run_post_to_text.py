@@ -3,7 +3,7 @@ import subprocess
 import os
 import re
 
-files = glob.glob('/mnt/gluster/home/sonal.singhal1/ZF/analysis/map_simulations/rec_maps/recomb*')
+files = glob.glob('/mnt/gluster/home/sonal.singhal1/simulations/FDR/maps/recomb*')
 files = filter(lambda x: not re.search('txt', x), files)
 for file in files:
 	out = '%s.txt' % file

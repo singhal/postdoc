@@ -2,6 +2,12 @@ import re
 import gzip
 import glob
 import subprocess
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--sp", help="species for which to run analysis")
+args = parser.parse_args()
+sp = args.sp
 
 chr_lengths = {	'chr10': 20806668, 'chr11': 21403021, 'chr12': 21576510, 'chr13': 16962381,
                 'chr14': 16419078, 'chr15': 14428146, 'chr16': 9909, 'chr17': 11648728,
@@ -12,13 +18,23 @@ chr_lengths = {	'chr10': 20806668, 'chr11': 21403021, 'chr12': 21576510, 'chr13'
                 'chr4A': 20704505, 'chr4': 69780378, 'chr5': 62374962, 'chr6': 36305782,
                 'chr7': 39844632, 'chr8': 27993427, 'chr9': 27241186, 'chrLG2': 109741,
                 'chrLG5': 16416, 'chrLGE22': 883365, 'chrZ': 72861351}
-genome = '/mnt/gluster/home/sonal.singhal1/LTF/masked_genome/LTF.masked_genome.repeat_masked.fa'
+genome = '/mnt/gluster/home/sonal.singhal1/%s/masked_genome/%s.masked_genome.repeat_masked.fa' % (sp, sp)
 window = 50000
-nind = 40
+
+if sp == 'ZF':
+	nind = {}
+	for chr in chr_lengths:
+		nind[chr] = 38
+	nind['chrZ'] = 29
+	vcfs = glob.glob('/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/*phased*')
+if sp == 'LTF':
+	nind = {}
+        for chr in chr_lengths:
+                nind[chr] = 40
+        nind['chrZ'] = 32
+	vcfs = glob.glob('/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/*phased*')
 theta = {}
-outfile = '/mnt/gluster/home/sonal.singhal1/LTF/analysis/pop_gen/wattersons_theta.csv'
-vcfbase = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.%s.filtered.coverage.repeatmasked.recoded_biallelicSNPs.vqsr.vcf.gz'
-#vcfbase = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.repeatmasked.filtered.recoded_biallelicSNPs.nomendel.vcf.gz'
+outfile = '/mnt/gluster/home/sonal.singhal1/%s/analysis/pop_gen/wattersons_theta.csv' % sp
 
 for chr, length in chr_lengths.items():
 	theta[chr] = {}
@@ -36,24 +52,43 @@ for chr, length in chr_lengths.items():
 		theta[chr][ix] = {'start': start, 'end': end, 'ss': 0, 'seq_length': n_count}
 
 
-for chr in chr_lengths:
-	gzvcf = vcfbase % chr
+for gzvcf in vcfs:
 	f = gzip.open(gzvcf, 'r')
+	chr = re.search('(chr[A-Z|0-9]+)', gzvcf).group(1)
 	for l in f:
 		if not re.search('^#', l):
 			d = re.split('\t', l)
-			# identifies the chunk into which the variant goes
-			ix = int(int(d[1])/float(window))
-			theta[chr][ix]['ss'] += 1
+			# look for non-indels
+			alleles = [d[3]] + re.split(',', d[4])
+			indel = False
+			for allele in alleles:
+				if len(allele) > 1:
+					indel = True
+			if not indel:
+				genos = []
+				for geno in d[9:]:
+					geno = re.search('^([^:]+)', geno).group(1)
+					genos += re.split('[|/]', geno)
+				num_alleles = 0
+				for ix, allele in enumerate(alleles):
+					if genos.count(str(ix)) > 0:
+						num_alleles += 1
+				if num_alleles > 1:
+					# look for variable sites only
+					# identifies the chunk into which the variant goes
+					ix = int(int(d[1])/float(window))
+					theta[chr][ix]['ss'] += 1
 	f.close()
-
-harmonic = 0
-for i in range(1, nind):
-	harmonic += 1/float(i)
 
 out = open(outfile, 'w')
 out.write('chr,index,start,end,seq_length,watterson_theta\n')
 for chr in theta:
+
+	harmonic = 0
+	# to account for different nind in different chromosomes
+	for i in range(1, nind[chr]):
+		harmonic += 1/float(i)
+
 	for ix in sorted(theta[chr].keys()):
 		if theta[chr][ix]['seq_length'] > 0:
 			thetaw = theta[chr][ix]['ss'] / float(theta[chr][ix]['seq_length']) / harmonic

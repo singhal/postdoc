@@ -6,25 +6,22 @@ import subprocess
 import random
 import os
 
-def simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hotspot_lengths, ix):
-	
-	hotspot_file = '%shotspot_rho%s_%s.txt' % (out_dir, rho, ix)
-	hotspot_f = open(hotspot_file, 'w')
-	num_hotspots = len(diffs) * len(hotspot_lengths)
-	starts = np.linspace(0+50e3,seq_size-50e3,num_hotspots)
-	for i, diff in enumerate(diffs):
-		for j, length in enumerate(hotspot_lengths):
-			spot_start = starts[j + i * len(hotspot_lengths)]
-			spot_end = spot_start + length
-			hotspot_f.write('%.4f\t%.4f\t%.5f\n' % (spot_start / float(seq_size), spot_end / float(seq_size), diff))
-	hotspot_f.close()	
 
-	haplo_file = '%shaplo_rho%s_%s.fa' % (out_dir, rho, ix)
-	anc_file = '%sancallele_rho%s_%s.txt' % (out_dir, rho, ix)
+def switch_error(point, hap1, hap2):
+	hap1new = ''.join(hap1[0:point]) + ''.join(hap2[point:])
+	hap2new = ''.join(hap2[0:point]) + ''.join(hap1[point:])
+
+	return list(hap1new), list(hap2new)
+
+
+def simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, switch, ix):
+	
+	haplo_file = '%shaplo_rho%s_switch%s_%s.fa' % (out_dir, rho, switch, ix)
+	anc_file = '%sancallele_rho%s_switch%s_%s.txt' % (out_dir, rho, switch, ix)
 	haplo_f = open(haplo_file, 'w')
 	anc_f = open(anc_file, 'w')
 
-	macs = subprocess.Popen('~/bin/macs/macs %s %s -t %s -r %s -R %s | ~/bin/macs/msformatter' % (nsam, seq_size, theta, rho, hotspot_file), shell=True, stdout=subprocess.PIPE)
+	macs = subprocess.Popen('~/bin/macs/macs %s %s -t %s -r %s | ~/bin/macs/msformatter' % (nsam, seq_size, theta, rho), shell=True, stdout=subprocess.PIPE)
 
 	positions = []
 	haplo = []
@@ -36,6 +33,7 @@ def simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hot
 	haplo = haplo[(len(haplo) - nsam):len(haplo)]
 	for ix, hap in enumerate(haplo):
 		haplo[ix] = list(hap)
+
 	# these don't have singletons
 	singletons = []
 	positions_pruned = []
@@ -66,6 +64,25 @@ def simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hot
 	del positions
 	del haplo
 	del singletons
+
+	random.shuffle(haplo_pruned)
+	switch_hap = []
+	# introduce switch error rate	
+	for i in range(0, nsam, 2):
+		hap1 = list(haplo_pruned[i])
+		hap2 = list(haplo_pruned[i + 1])
+
+		num_hets = []
+		for pos, (i, j) in enumerate(zip(hap1, hap2)):
+			if i != j:
+				num_hets.append(pos)
+		switch_points = sorted(random.sample(num_hets, int(len(num_hets) * switch)))
+
+		for switch_point in switch_points:
+			hap1, hap2 = switch_error(switch_point, hap1, hap2)
+		switch_hap.append(hap1)
+		switch_hap.append(hap2)
+	del haplo_pruned
 	
 	bases = []
 	for base, freq in eq_freq.items():
@@ -91,7 +108,7 @@ def simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hot
 				break
 	anc_f.close()
 
-	for ind, ind_hap in enumerate(haplo_pruned):
+	for ind, ind_hap in enumerate(switch_hap):
 		tmp_seq = seq[:]
 		for hap_ix, bp in enumerate(ind_hap):
 			if bp == '1':
@@ -103,21 +120,15 @@ def simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hot
 
 
 def main():
-	out_dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspot_simulations/sim_10_20_40_60_80_100/'
+	out_dir = '/mnt/gluster/home/sonal.singhal1/simulations/FDR/'
 	# sim MB
 	seq_size = 1000000
 	# num replicates to simulate
-	num_sim = 50
-	# num_sim = 1
-	# hotspot / coldspot difference, > 1
-	diffs = [10, 10, 20, 20, 40, 40, 60, 60, 80, 80, 100, 100]
-	# diffs = [10]
+	num_sim = 4
 	# mean rho values
-	rhos = [0.0001, 0.001, 0.01, 0.1, 0.2, 0.4, 0.6, 0.8, 1.0, 2.5]
-	# rhos = [0.0001]
-	# hotspot length
-	hotspot_lengths = [2000]
-	# hotspot_lengths = [1000]
+	rhos = [0.001, 0.01, 0.1, 0.5]
+	# switch error rate
+	switches = [0.0, 0.01, 0.02, 0.04, 0.08, 0.16]
 	# theta (per bp!)
 	theta = 0.0135
 	# number of haplotypes to sample
@@ -130,11 +141,13 @@ def main():
                      'G': {'A': 0.659, 'C': 0.135, 'T': 0.206},
                      'T': {'A': 0.215, 'C': 0.600, 'G': 0.185}}
 	
+
 	for rho in rhos:
-		for ix in range(num_sim):
-			haplo_file = '%shaplotypes/haplo_rho%s_%s.fa' % (out_dir, rho, ix)
-			if not os.path.isfile(haplo_file):
-				simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hotspot_lengths, ix)
+		for switch in switches:
+			for ix in range(num_sim):
+				haplo_file = '%shaplotypes/haplo_rho%s_switch%s_%s.fa' % (out_dir, rho, switch, ix)
+				if not os.path.isfile(haplo_file):
+					simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, switch, ix)
 	
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ from itertools import izip
 import glob
 
 def find_hotspots(file, block_size, flank_size):
-	d = pd.read_csv(file, sep=" ", skiprows=3, header=None, names=['left_snp', 'right_snp', 'meanrho'])
+	d = pd.read_csv(file, sep=" ", skiprows=3, header=None, names=['left_snp', 'right_snp', 'meanrho', 'p025', 'p975'])
 	outfile = file.replace('.txt', '_hotspots_blocksize%s_flanksize%s.txt' % (block_size, flank_size))
 	out = open(outfile, 'w')
 	out.write('block_start,block_end,flank_rate,block_rate,diff\n')
@@ -66,7 +66,7 @@ def main():
 	block_size = 2000
 	flank_size = 40000
 
-	files = glob.glob('/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspot_simulations/sim_10_20_40_60_80_100/maps/*.txt')
+	files = glob.glob('/mnt/gluster/home/sonal.singhal1/simulations/FDR/maps/*txt')
 	for file in files:
 		if not re.search('hotspots', file):
 			find_hotspots(file, block_size, flank_size) 

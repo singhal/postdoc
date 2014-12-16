@@ -3,7 +3,7 @@ import re
 import pandas as pd
 
 seq_size = 1e6
-dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspot_simulations/sim_10_20_40_60_80_100/'
+dir = '/mnt/gluster/home/sonal.singhal1/simulations/hotspot_simulations/sim_10_20_40_60_80_100/'
 hotspot_files = glob.glob('%shotspots/*' % dir)
 
 tack_on = '_blocksize2000_flanksize40000'
@@ -16,7 +16,7 @@ out1 = open(outfile1, 'w')
 out1.write('bpen,theta,rho,cutoff,power\n')
 
 abs_cut_off = 10
-cut_off = {10: 24, 20: 24, 40: 24, 60: 24, 80: 24, 100: 24}
+cut_off = {10: 100, 20: 100, 40: 100, 60: 100, 80: 100, 100: 100}
 # cut_off = {10: 48, 50: 48, 100: 48}
 found_hotspots = {}
 
