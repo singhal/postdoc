@@ -11,10 +11,11 @@ args = parser.parse_args()
 chr = args.chr
 
 dir = '/mnt/gluster/home/sonal.singhal1/ZF/'
-vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/gatk.ug.all_zf.%s.coverage.filtered.repeatmasked.vqsr.vcf.gz' % chr
-geno_out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/%s.hapi.geno' % chr
-sites_out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/%s.hapi.sites' % chr
-marker_out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/%s.hapi.list' % chr
+vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/gatk.ug.all_zf.%s.coverage.filtered.repeatmasked.vqsr.vcf.gz' % chr
+geno_out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/input_files/%s.hapi.geno' % chr
+sites_out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/input_files/%s.hapi.sites' % chr
+marker_out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/input_files/%s.hapi.list' % chr
+locs_out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/input_files/%s.hapi.locs' % chr
 
 ind_info = {	'MP1': ['fam1', '10', 'x', 'x', '2', '0'],
 		'MP2': ['fam1', '12', 'x', 'x', '1', '0'],
@@ -79,10 +80,12 @@ for l in v:
 						genos[int(d[1])][ind] = '%s/%s' % (geno1, geno2)
 v.close()
 
+
 numbers = {'chr23': 1, 'chr24': 1, 'chr25': 1, 'chr26': 1, 'chr27': 1, 'chr28': 1, 'chr1A': 1, 
 		'chr1B': 1, 'chr4A': 1, 'chrLG2': 1, 'chrLG5': 1, 'chrLGE22': 1, 'chrZ': 1}
 sites_out_f = open(sites_out_file, 'w')
 marker_out_f = open(marker_out_file, 'w')
+locs_out_f = open(locs_out_file, 'w')
 chr_no = None
 if chr in numbers:
 	chr_no = numbers[chr]
@@ -93,8 +96,10 @@ for ix, site in enumerate(sorted(genos.keys())):
 	marker_out_f.write('M rs%s\n' % ix)
 	cm = site * 50 / float(max_site)
 	sites_out_f.write('%s rs%s %.6f\n' % (chr_no, ix, cm))
+	locs_out_f.write('%s rs%s %s %.6f\n' % (chr_no, ix, site, cm))
 sites_out_f.close()
 marker_out_f.close()
+locs_out_f.close()
 
 geno_out_f = open(geno_out_file, 'w')
 for ind in inds:

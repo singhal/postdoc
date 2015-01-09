@@ -32,24 +32,39 @@ for vcf in [vcffile]:
                 d = re.split('\s+', l)
                 errors[sites[d[4]]] = 1
         error_f.close()
+	del sites
+
+	# only want to include sites in the family
+	sites = {}
+	unrel_vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/for_shapeit/gatk.ug.unrel_zf.%s.coverage.repeatmasked.filtered.recoded_biallelicSNPs.nomendel.trimmed.vcf.gz' % (chr)
+	f = gzip.open(unrel_vcf, 'r')
+	for l in f:
+		if not re.search('^#', l):
+			d = re.split('\t', l)
+			sites[ int(d[1]) ] = 1
+	f.close()
+
 
 	for l in infile:
 		if re.search('^#', l):
 			if re.search('^#CHROM', l):
 				d = re.split('\t', l.rstrip())
-				outfile.write(l)
+				outfile.write('\t'.join(d[:-3]) + '\n')
 			else:
 				outfile.write(l)
 		else:
 			d = re.split('\t', l.rstrip())
 			if re.search('PASS', l):
-				indel = False
+				keep = True
 				alleles = [d[3]] + re.split(",", d[4])
 				for allele in alleles:
 					if len(allele) > 1:
-						indel = True
+						keep = False
+
+				if int(d[1]) not in sites:
+					keep = False
 	
-				if not indel:
+				if keep:
 					actual_alleles = []
                 	                for ix, allele in enumerate(alleles):
                 	                        count = len(re.findall('%s\/' % ix, l)) + len(re.findall('\/%s' % ix, l))
@@ -59,7 +74,7 @@ for vcf in [vcffile]:
 					if len(actual_alleles) == 2:
 						if int(d[1]) not in errors:
 							if len(d[4]) == 1:
-								outfile.write(l)
+								outfile.write('\t'.join(d[:-3]) + '\n')
 							else:
 								tmp = l.rstrip()
 								for ix, allele in enumerate(alleles):
@@ -71,7 +86,7 @@ for vcf in [vcffile]:
 	
 								outfile.write(  '\t'.join(d2[0:3]) + '\t' + actual_alleles[0] + 
 									 	'\t' + actual_alleles[1] + '\t.\t' + d2[6]
-										+ '\t.\t' +  '\t'.join(d2[8:]) + '\n')
+										+ '\t.\t' +  '\t'.join(d2[8:-3]) + '\n')
 	infile.close()
 	outfile.close()
 				 	

@@ -75,8 +75,12 @@ def call_ancestral_allele(b1, b2, b3, b4, b5):
 	
 	if len(fixed_alleles) > 0:
 		putative_anc = most_common(fixed_alleles)
-		if fixed_alleles.count(putative_anc) >= 3:
-			return putative_anc
+		if len(fixed_alleles) <= 3:
+			if fixed_alleles.count(putative_anc) >= 2:
+				return putative_anc
+		if len(fixed_alleles) >= 4:
+			if fixed_alleles.count(putative_anc) >= 3:
+                                return putative_anc
 
 	return 'N'
 
@@ -120,20 +124,19 @@ def trawl_genome(out_file, chr, f_out1, f_out2, f_out3, f_out4, f_out5, f_ref, v
 				b2_call = get_history(pos, var2, b2, b_ref)
 				b3_call = get_history(pos, var3, b3, b_ref)
 	
-				anc_allele = call_ancestral_allele(b1_call, b2_call, b3_call, b4, b5)			
+				anc_allele = call_ancestral_allele(b1_call, b2_call, b3_call, b4, b5)	
 			else:
 				if b1 == 'N' and b2 == 'N' and b3 == 'N':
 					anc_allele = 'N'
 				else:
 					anc_allele = b_ref
+
 			new_chr += anc_allele
 	return new_chr
-
 
 def clean_up(chr_out, f_out):
 	f_out.close()
 	os.remove(chr_out)
-
 
 def print_chr(chr, new_chr, outfile):
 	f = open(outfile, 'w')
@@ -142,7 +145,6 @@ def print_chr(chr, new_chr, outfile):
 	for i in xrange(0, len(new_chr), 60):
 		f.write(''.join(new_chr[i:i+60]) + '\n')
 	f.close()
-
 
 def main():
 	parser = argparse.ArgumentParser()

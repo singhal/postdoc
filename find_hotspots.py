@@ -95,9 +95,9 @@ def main():
 	flank_size = int(args.flank)
 	sp = args.sp
 	
-	dir = '/mnt/gluster/home/sonal.singhal1/%s/analysis/LDhelmet/' % (sp)
+	dir = '/mnt/gluster/home/sonal.singhal1/%s/analysis/LDhelmet/with_fam/' % (sp)
 	out = '%sputative_hotspots/%s.putativehotspots.block%s_flank%s.out' % (dir, chr, block_size, flank_size)
-	file = '%smaps/%s_recombination_bpen5.rm.txt' % (dir, chr)
+	file = '%smaps/%s_recombination_bpen5.txt' % (dir, chr)
 
 	find_hotspots(file, out, chr, block_size, flank_size) 
 
