@@ -8,10 +8,10 @@ chrs = [ 'chr1', 'chr1A', 'chr1B', 'chr2', 'chr3', 'chr4', 'chr4A', 'chr5', 'chr
          'chrLG2', 'chrLG5', 'chrLGE22', 'chrZ' ]
 
 for chr in chrs:
-	vcf1 = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/gatk.ug.fam_zf.%s.coverage.vqsr.vcf.gz' % chr
-	vcf2 = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/gatk.ug.unrel_zf.%s.coverage.vqsr.vcf.gz' % chr
-	out = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/gatk.ug.all_zf.%s.coverage.vqsr.vcf.gz' % chr 
+	vcf1 = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/fam_vcf/gatk.ug.rel_zf.%s.coverage.repeatmasked.vqsr2.vcf.gz' % chr
+	vcf2 = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.repeatmasked.vqsr2.vcf.gz' % chr
+	out = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/gatk.ug.all_zf.%s.coverage.repeatmasked.vqsr2.vcf.gz' % chr 
 
 	call = '/home/shyamg/bin/java -Xmx5g -jar ~/bin/GenomeAnalysisTK.jar -R /mnt/gluster/home/sonal.singhal1/reference/Zfinch.fa -T CombineVariants --variant %s --variant %s -o %s -genotypeMergeOptions UNSORTED' % (vcf1, vcf2, out) 
 
-	subprocess.call('echo \"%s\" | qsub -l h_vmem=7g -cwd -V -j y -N \'%s\'' % (call, chr + 'cat_gatk'), shell=True)
+	print 'echo \"%s\" | qsub -l h_vmem=7g -cwd -V -j y -N \'%s\'' % (call, chr + 'cat_gatk')

@@ -81,8 +81,10 @@ def print_filtered_vcf(out_file_stem, vcf_file, ditch):
 		else:
 			d = re.split('\t', line)
 			if d[0] != cur_chr:
-				if out_file:
+				try:
 					o.close()
+                        	except:
+                                	pass
 				out_file = out_file_stem % (d[0])
 				o = gzip.open(out_file, 'w')
 				for head in header:
@@ -104,21 +106,24 @@ def main():
         
         # vcf file with variants
 	# assumed to be gzipped
-	vcf_file = '/mnt/gluster/home/emleffler/genotype_callsets/zebrafinch/zf_unrels/unified_genotyper/after_vqsr/gatk.ug.unrelzf.allchrs.snps.indels.vqsr2.vcf.gz'
+	# vcf_file = '/mnt/gluster/home/emleffler/genotype_callsets/zebrafinch/zf_unrels/unified_genotyper/after_vqsr/gatk.ug.unrelzf.allchrs.snps.indels.vqsr2.vcf.gz'
 	# vcf_file = '/mnt/gluster/home/emleffler/genotype_callsets/zebrafinch/zf_family/unified_genotyper/after_vqsr/gatk.ug.MP1-5.allchrs.snps.indels.vqsr2.allsites.vcf.gz' 
-        # file with coverage summary, created by 'get_average_depth.pl'
-        cov_summary = '/mnt/gluster/home/sonal.singhal1/ZF/masked_genome/zebrafinch_depth_summary.txt'
+        vcf_file = '/mnt/gluster/home/emleffler/genotype_callsets/longtailedfinch/after_vqsr/gatk.ug.ltf.allchrs.snps.indels.vqsr2.vcf.gz'
+	# file with coverage summary, created by 'get_average_depth.pl'
+        cov_summary = '/mnt/gluster/home/sonal.singhal1/LTF/masked_genome/longtailed_depth_summary.txt'
         # file with average coverage data, created by 'get_average_depth.pl'
-        cov_data = '/mnt/gluster/home/sonal.singhal1/ZF/masked_genome/zebrafinch_avg_depth.txt.gz' 
+        cov_data = '/mnt/gluster/home/sonal.singhal1/LTF/masked_genome/longtailed_avg_depth.txt.gz' 
 	
 	# file with repeat data
 	repeat_file = '/mnt/gluster/home/sonal.singhal1/reference/taeGut1.repeatMaskerBlast.repeatLibrary20140131.out'
 
         # out directory      
-	out_dir = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/'
-	# out_dir = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/fam_vcf/'
-	out_file_stem = out_dir  + 'gatk.ug.unrel_zf.%s.coverage.repeatmasked.vqsr2.vcf.gz'
+	# out_dir = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/'
+	# out_dir = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/fam_vcf/'
+	out_dir = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/'
+	# out_file_stem = out_dir  + 'gatk.ug.unrel_zf.%s.coverage.repeatmasked.vqsr2.vcf.gz'
 	# out_file_stem = out_dir + 'gatk.ug.rel_zf.%s.coverage.repeatmasked.vqsr2.vcf.gz'
+	out_file_stem = out_dir + 'gatk.ug.ltf.%s.coverage.repeatmasked.vqsr2.vcf.gz'	
 
         # chromosome names
         chrs = [ 'chr1', 'chr1A', 'chr1B', 'chr2', 'chr3', 'chr4', 'chr4A', 'chr5', 'chr6', 'chr7', 'chr8',

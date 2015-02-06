@@ -11,11 +11,11 @@ args = parser.parse_args()
 chr = args.chr
 
 dir = '/mnt/gluster/home/sonal.singhal1/ZF/'
-vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/gatk.ug.all_zf.%s.coverage.filtered.repeatmasked.vqsr.vcf.gz' % chr
-geno_out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/input_files/%s.hapi.geno' % chr
-sites_out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/input_files/%s.hapi.sites' % chr
-marker_out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/input_files/%s.hapi.list' % chr
-locs_out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/input_files/%s.hapi.locs' % chr
+vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/gatk.ug.all_zf.%s.coverage.repeatmasked.filtered.nomendel.shared.noswitch.vqsr2.vcf.gz' % chr
+geno_out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/input_files/%s.hapi.noswitch.geno' % chr
+sites_out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/input_files/%s.hapi.noswitch.sites' % chr
+marker_out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/input_files/%s.hapi.noswitch.list' % chr
+locs_out_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/input_files/%s.hapi.noswitch.locs' % chr
 
 ind_info = {	'MP1': ['fam1', '10', 'x', 'x', '2', '0'],
 		'MP2': ['fam1', '12', 'x', 'x', '1', '0'],
@@ -25,25 +25,6 @@ ind_info = {	'MP1': ['fam1', '10', 'x', 'x', '2', '0'],
 
 genos = {}
 inds = []
-
-errorfile = dir + 'mendelian_errors/plink_results/all_zf.me.%s.mendel' % chr
-sites_file = dir + 'mendelian_errors/all_zf.%s.map' % chr
-
-sites_f = open(sites_file, 'r')
-sites = {}
-for l in sites_f:
-	d = re.split('\s+', l)
-	sites[d[1]] = int(d[3])
-sites_f.close()
-        
-errors = {}
-error_f = open(errorfile, 'r')
-junk = error_f.next()
-for l in error_f:
-	d = re.split('\s+', l)
-	errors[sites[d[4]]] = 1
-error_f.close()
-sites = {}
 
 v = gzip.open(vcf, 'r')
 for l in v:
@@ -58,26 +39,25 @@ for l in v:
 			if len(allele) > 1:
 				indel = True
 		if not indel and len(alleles) == 2:
-			if int(d[1]) not in errors:
-				all_missing = True
-				for geno in d[-5:]:
-					geno = re.search('^(\S/\S)', geno).group(1)
-					if geno != './.':
-						all_missing = False
-				if not all_missing:
-					genos[int(d[1])] = {}
-					for ind, geno in zip(inds, d[-5:]):
-						geno1 = re.search('^(\S)', geno).group(1)
-						geno2 = re.search('\/(\S)', geno).group(1)
-						if geno1 == '.':
-							geno1 = 0
-						else:
-							geno1 = int(geno1) + 1
-						if geno2 == '.':
-							geno2 = 0
-						else:
-							geno2 = int(geno2) + 1
-						genos[int(d[1])][ind] = '%s/%s' % (geno1, geno2)
+			all_missing = True
+			for geno in d[-5:]:
+				geno = re.search('^(\S/\S)', geno).group(1)
+				if geno != './.':
+					all_missing = False
+			if not all_missing:
+				genos[int(d[1])] = {}
+				for ind, geno in zip(inds, d[-5:]):
+					geno1 = re.search('^(\S)', geno).group(1)
+					geno2 = re.search('\/(\S)', geno).group(1)
+					if geno1 == '.':
+						geno1 = 0
+					else:
+						geno1 = int(geno1) + 1
+					if geno2 == '.':
+						geno2 = 0
+					else:
+						geno2 = int(geno2) + 1
+					genos[int(d[1])][ind] = '%s/%s' % (geno1, geno2)
 v.close()
 
 

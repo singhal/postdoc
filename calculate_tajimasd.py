@@ -19,7 +19,7 @@ if sp == 'ZF':
         ninds = {}
         for chr in chr_lengths:
                 ninds[chr] = 38
-        ninds['chrZ'] = 29
+        ninds['chrZ'] = 28
 if sp == 'LTF':
         ninds = {}
         for chr in chr_lengths:

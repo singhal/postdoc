@@ -13,9 +13,9 @@ sp = args.sp
 min_allele = int(args.min_allele)
 
 if sp == 'ZF':
-	vcfs = glob.glob('/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/*biallelic*.vcf.gz')
+	vcfs = glob.glob('/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/for_shapeit/*finch19*miss*')
 if sp == 'LTF':
-	vcfs = glob.glob('/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/*biallelic*.vcf.gz')
+	vcfs = glob.glob('/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/for_shapeit/*ltf*')
 out = '/mnt/gluster/home/sonal.singhal1/%s/analysis/segregatingsites_af%s.txt' % (sp, min_allele)
 
 o = open(out, 'w')

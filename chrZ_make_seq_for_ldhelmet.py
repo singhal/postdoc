@@ -123,14 +123,16 @@ def main():
         sp = args.sp
 
 	if sp == 'ZF':
-		vcf_file = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/for_shapeit/gatk.ug.unrel_zf.chrZ.coverage.repeatmasked.filtered.recodedsex.recoded_biallelicSNPs.nomendel.vcf.gz'
+		vcf_file = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/for_shapeit/gatk.ug.finch19.chrZ.allfilters.recodedsex.recoded_biallelicSNPs.vcf.gz'
+		hap_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/PIR_approach/finch19/chrZ_haplotypes.haps'
+		masked_genome = '/mnt/gluster/home/sonal.singhal1/ZF/masked_genome/ZF.masked_genome.repeat_masked.switch_masked.fa'
 	if sp == 'LTF':
-		vcf_file = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/for_shapeit/gatk.ug.ltf.chrZ.filtered.coverage.repeatmasked.recodedsex.recoded_biallelicSNPs.vcf.gz'
-	hap_file = '/mnt/gluster/home/sonal.singhal1/%s/phasing/PIR_approach/results/chrZ_haplotypes.haps' % sp
-	out_file = '/mnt/gluster/home/sonal.singhal1/%s/phasing/PIR_approach/chrZ_haplotypes.fasta' % sp
-	site_file = '/mnt/gluster/home/sonal.singhal1/%s/phasing/PIR_approach/chrZ_sites.csv' % sp
-	genome = '/mnt/gluster/home/sonal.singhal1/reference/taeGut1.bamorder.fasta'
-	masked_genome = '/mnt/gluster/home/sonal.singhal1/%s/masked_genome/%s.masked_genome.fa' % (sp, sp)
+		vcf_file = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/for_shapeit/gatk.ug.ltf.chrZ.allfilters.recodedsex.recoded_biallelicSNPs.vcf.gz'
+		hap_file = '/mnt/gluster/home/sonal.singhal1/%s/phasing/PIR_approach/chrZ_haplotypes.haps' % sp
+		masked_genome = '/mnt/gluster/home/sonal.singhal1/LTF/masked_genome/LTF.masked_genome.repeat_masked.fa'
+	out_file = '/mnt/gluster/home/sonal.singhal1/%s/analysis/LDhelmet/chrZ_haplotypes.fasta' % sp
+	site_file = '/mnt/gluster/home/sonal.singhal1/%s/analysis/LDhelmet/chrZ_sites.csv' % sp
+	genome = '/mnt/gluster/home/sonal.singhal1/reference/taeGut1_60.bamorder.fasta'
 	min_allele = 1
 	chr = 'chrZ'
 

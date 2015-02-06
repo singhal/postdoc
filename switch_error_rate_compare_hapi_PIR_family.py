@@ -12,7 +12,7 @@ chr_lengths = { 'chr10': 20806668, 'chr11': 21403021, 'chr12': 21576510, 'chr13'
                 'chr27': 4618897, 'chr28': 4963201, 'chr2': 156412533, 'chr3': 112617285,
                 'chr4A': 20704505, 'chr4': 69780378, 'chr5': 62374962, 'chr6': 36305782,
                 'chr7': 39844632, 'chr8': 27993427, 'chr9': 27241186, 'chrLG2': 109741,
-                'chrLG5': 16416, 'chrLGE22': 883365, 'chrZ': 72861351}
+                'chrLG5': 16416, 'chrLGE22': 883365}
 
 parser = argparse.ArgumentParser(description='Identify switch errors between family samples phased via HAPI and phased via ShapeIT PIR.')
 parser.add_argument('--chr', help='chromosome')
@@ -20,54 +20,21 @@ args = parser.parse_args()
 chr = args.chr
 
 dir = '/mnt/gluster/home/sonal.singhal1/ZF/'
-vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/gatk.ug.all_zf.%s.coverage.filtered.repeatmasked.vqsr.vcf.gz' % chr
 # PIR output
-pir_out = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/phasing_uncertainty/switch_error/%s_haplotypes.haps' % chr
+pir_out = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/PIR_approach/finch21/%s_haplotypes.haps' % chr
 # HAPI output
-hapi_out = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/output_files/hapi.%s.csv' % chr
+hapi_out = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/output_files/%s.noswitch.csv' % chr
+loc_out = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/input_files/%s.hapi.noswitch.locs' % chr
 # out
-out = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/phasing_uncertainty/switch_error/%s_switches.csv' % chr
-
-errorfile = dir + 'mendelian_errors/plink_results/all_zf.me.%s.mendel' % chr
-sites_file = dir + 'mendelian_errors/all_zf.%s.map' % chr
-
-sites_f = open(sites_file, 'r')
-sites = {}
-for l in sites_f:
-	d = re.split('\s+', l)
-	sites[d[1]] = int(d[3])
-sites_f.close()
-        
-errors = {}
-error_f = open(errorfile, 'r')
-junk = error_f.next()
-for l in error_f:
-	d = re.split('\s+', l)
-	errors[sites[d[4]]] = 1
-error_f.close()
-sites = {}
+out = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/switch_error/%s_switches.csv' % chr
 
 # identify the sites phased via hapi
 hapi_sites = {}
-v = gzip.open(vcf, 'r')
-for l in v:
-	if not re.search('^#', l):
-		d = re.split('\t', l.rstrip())
-		alleles = [d[3]] + re.split(',', d[4])
-		indel = False
-		for allele in alleles:
-			if len(allele) > 1:
-				indel = True
-		if not indel and len(alleles) == 2:
-			if int(d[1]) not in errors:
-				all_missing = True
-				for geno in d[-5:]:
-					geno = re.search('^(\S/\S)', geno).group(1)
-					if geno != './.':
-						all_missing = False
-				if not all_missing:
-					hapi_sites[int(d[1])] = 1
-v.close()
+f = open(loc_out, 'r')
+for l in f:
+	d = re.split('\s+', l.rstrip())
+	hapi_sites[int(d[2])] = 1
+f.close()
 
 # get sites phased by PIR
 pir_sites = {}
@@ -133,11 +100,17 @@ switch_locs1, het_sites1 = calculate_switch(0,1,0)
 switch_locs2, het_sites2 = calculate_switch(2,3,2)
 
 bins = range(0,chr_lengths[chr],50000)
+if len(bins) == 1:
+	bins.append(50000)
 site_bins = np.digitize(sites, bins)
 het_bins1 = np.digitize(het_sites1, bins)
 het_bins2 = np.digitize(het_sites2, bins)
-switch_bins1 = np.digitize(switch_locs1, bins)
-switch_bins2 = np.digitize(switch_locs2, bins)
+switch_bins1 = []
+switch_bins2 = []
+if len(switch_locs1) > 0:
+	switch_bins1 = np.digitize(switch_locs1, bins)
+if len(switch_locs2) > 0:
+	switch_bins2 = np.digitize(switch_locs2, bins)
 
 o = open(out, 'w')
 o.write('chromosome,start,end,number_snps,number_het_sites1,number_switches1,number_het_sites2,number_switches2\n')

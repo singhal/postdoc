@@ -2,18 +2,13 @@ import glob
 import re
 import pandas as pd
 import os
-import argparse
 import numpy as np
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--sp", help="species for which to run the analysis")
-args = parser.parse_args()
-sp = args.sp
-
-# repeat masked file because the samples aren't repeat masked
-repeat = '/mnt/gluster/home/sonal.singhal1/reference/taeGut1.repeatMaskerBlast.repeatLibrary20140131.out'
 # to get the background rate
-rho_dir = '/mnt/gluster/home/sonal.singhal1/%s/analysis/LDhelmet/maps/' % sp
+if sp == 'ZF':
+	rho_dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/LDhelmet/without_fam/maps/'
+if sp == 'LTF':
+	rho_dir = '/mnt/gluster/home/sonal.singhal1/LTF/analysis/LDhelmet/old/maps/'
 # take this much sequence around the putative hotspot
 block = 50e3
 # output directory
@@ -29,21 +24,13 @@ spots = {}
 chrs = [    'chr1', 'chr1A', 'chr2', 'chr3', 'chr4', 'chr4A', \
             'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10', \
             'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chrZ']
-
-if sp == 'LTF':
-        theta = 0.0046
-	d = d[ d.lmatch_lk >= 10]
-	for chr, start in zip(d.chr, d.lmatch_start):
-                if chr not in spots:
-                        spots[chr] = []
-                spots[chr].append(start)
-if sp == 'ZF': 
-        theta = 0.0058
-	d = d[ d.zmatch_lk >= 10]
-        for chr, start in zip(d.chr, d.zmatch_start):
-		if chr not in spots:
-			spots[chr] = []
-		spots[chr].append(start)
+ 
+theta = 0.00675
+d = d[ d.zmatch_lk >= 10]
+for chr, start in zip(d.chr, d.zmatch_start):
+	if chr not in spots:
+		spots[chr] = []
+	spots[chr].append(start)
 
 # store all repeats into a dictionary
 repeats = {}

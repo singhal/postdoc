@@ -9,6 +9,7 @@ chrs = [ 'chr1', 'chr1A', 'chr1B', 'chr2', 'chr3',  'chr4', 'chr4A', 'chr5', 'ch
 
 chrs_long = ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr1A']
 
+'''
 bam_files = {   '26462': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned_mateFixed_bams/101.mateFixed.realigned.bam',
                 '28339': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned_mateFixed_bams/105.mateFixed.realigned.bam',
                 '28353': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned_mateFixed_bams/109.mateFixed.realigned.bam',
@@ -32,7 +33,6 @@ bam_files = {   '26462': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned
 		'MP2': '/mnt/gluster/home/sonal.singhal1/ZF/bam_files/aln-pe.MP-2.bwamem.RG.psorted.pmarkdup.realigned.bam'
 		}
 
-'''
 bam_files = {   '26462': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned_mateFixed_bams/101.mateFixed.realigned.bam',
 		'28339': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned_mateFixed_bams/105.mateFixed.realigned.bam',
 		'28353': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned_mateFixed_bams/109.mateFixed.realigned.bam',
@@ -52,7 +52,6 @@ bam_files = {   '26462': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned
 		'26795': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned_mateFixed_bams/177.mateFixed.realigned.bam',
 		'28078': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned_mateFixed_bams/185.mateFixed.realigned.bam',
 		'28313': '/scratch/sannareddyk/FinchSeq/realigned_bams/realigned_mateFixed_bams/189.mateFixed.realigned.bam' }
-
 
 bam_files = {   '73783': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/73783.realigned.mateFixed.bam',
 		'73788': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/73788.recal.bam',
@@ -76,31 +75,39 @@ bam_files = {   '73783': '/mnt/gluster/data/internal_restricted_supp/finches_201
 		'W2994': '/mnt/gluster/data/internal_restricted_supp/finches_2014/longtailedfinch/realigned_mateFixed_recal_bams/W2994.recal.bam'}
 '''
 
-dir = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/phasing_uncertainty/switch_error/'
-vcf_dir = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/'
+dir = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/PIR_approach/finch19/'
+vcf_dir = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/for_shapeit/'
 
 for chr in chrs:
 	bam_list = dir + chr + '_bamlist'
-	o = open(bam_list, 'w')
-	# for bam in bam_files:
-	#	o.write("%s\t%s\t%s\n" % (bam, bam_files[bam], chr))
-	# o.close()
 	
-	vcf_file = vcf_dir + 'gatk.ug.all_zf.%s.coverage.filtered.repeatmasked.recoded_biallelicSNPs.nomendel.vcf.gz' % chr
+	'''
+	o = open(bam_list, 'w')
+	for bam in bam_files:
+		o.write("%s\t%s\t%s\n" % (bam, bam_files[bam], chr))
+	o.close()
+	'''	
+
+	vcf_file = vcf_dir + 'gatk.ug.zf.%s.allfilters.recoded_biallelicSNPs.nomissing.vcf.gz' % chr
 	pir_out = dir + chr + '_PIRlist'	
 	hap_out = dir + chr + '_haplotypes'
 	
+	'''
+	call = "~/bin/extractPIRs.v1.r68.x86_64/extractPIRs --bam %s --vcf %s --out %s" % (bam_list, vcf_file, pir_out)
 	
-	# call = "~/bin/extractPIRs.v1.r68.x86_64/extractPIRs --bam %s --vcf %s --out %s" % (bam_list, vcf_file, pir_out)
-	
-	# if chr in chrs_long:
-	# 	print 'echo "%s" | qsub -l h_vmem=10g -cwd -V -j y -N "PIR_Z%s"' % (call, chr)
-	#else:
-	#	print 'echo "%s" | qsub -l h_vmem=3g -cwd -V -j y -N "PIR_Z%s"' % (call, chr)
-	
-	
-	call = '/mnt/lustre/home/sonal.singhal1/bin/shapeit_v2r790/shapeit -assemble --input-vcf %s --input-pir %s -O %s -L %s --window 0.5 --thread 8 --rho 0.0008' % (vcf_file, pir_out, hap_out, hap_out + '.log')
 	if chr in chrs_long:
-	 	print 'echo "%s" | qsub -l h_vmem=40g -cwd -V -j y -N "PIR2_%s"' % (call, chr)
+	 	print 'echo "%s" | qsub -l h_vmem=10g -cwd -V -j y -N "PIR_L%s"' % (call, chr)
 	else:
-		print 'echo "%s" | qsub -l h_vmem=20g -cwd -V -j y -N "PIR2_%s"' % (call, chr)
+		print call
+	'''	
+
+	# finch19
+	call = '/mnt/lustre/home/sonal.singhal1/bin/shapeit_v2r790/shapeit -assemble --input-vcf %s --input-pir %s%s_PIRlist -O %s%s_haplotypes -L %s%s_haplotypes.log --window 0.5 --thread 8 --rho 0.0008 --output-graph %s%s_haplotypes.graph -R %s%s.hap.gz %s%s.legend.gz %s%s.sample' % (vcf_file, dir, chr, dir, chr, dir, chr, dir, chr, vcf_dir, chr, vcf_dir, chr, vcf_dir, chr)
+	# finch21
+	# call = '/mnt/lustre/home/sonal.singhal1/bin/shapeit_v2r790/shapeit -assemble --input-vcf %s --input-pir %s -O %s -L %s --window 0.5 --thread 8 --rho 0.0008' % (vcf_file, pir_out, hap_out, hap_out + '.log')
+	# LTF
+	# call = '/mnt/lustre/home/sonal.singhal1/bin/shapeit_v2r790/shapeit -assemble --input-vcf %s --input-pir %s -O %s -L %s --window 0.5 --thread 8 --rho 0.0008 --outgput-graph %s%s_haplotypes.graph' % (vcf_file, pir_out, hap_out, hap_out + '.log', dir, chr)
+	if chr in chrs_long:
+	 	print 'echo "%s" | qsub -l h_vmem=40g -cwd -V -j y -N "%s_finch21_PIR2"' % (call, chr)
+	else:
+		print 'echo "%s" | qsub -l h_vmem=20g -cwd -V -j y -N "%s_finch21_PIR2"' % (call, chr)

@@ -8,8 +8,8 @@ parser.add_argument("--chr", help="chromosome for which to run analysis")
 args = parser.parse_args()
 chr = args.chr
 
-vcffile = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.repeatmasked.vqsr.vcf.gz' % chr
-vcfout = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.repeatmasked.filtered.nomendel.vcf.gz' % chr
+vcffile = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.repeatmasked.filtered.vqsr2.vcf.gz' % chr
+vcfout = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.repeatmasked.filtered.nomendel.vqsr2.vcf.gz' % chr
 
 errorfile = '/mnt/gluster/home/sonal.singhal1/ZF/mendelian_errors/plink_results/all_zf.me.%s.mendel' % chr
 sites_file = '/mnt/gluster/home/sonal.singhal1/ZF/mendelian_errors/all_zf.%s.map' % chr
@@ -36,9 +36,8 @@ for l in f:
 	if re.match('#', l):
 		o.write(l)
 	else:
-		if re.search('PASS', l):
-			d = re.split('\t', l)
-			if int(d[1]) not in errors:
-				o.write(l)
+		d = re.split('\t', l)
+		if int(d[1]) not in errors:
+			o.write(l)
 o.close()
 f.close()

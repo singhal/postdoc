@@ -14,7 +14,7 @@ nuc = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
 
 for chr in [chr]:
 	aa_file = '/mnt/gluster/home/sonal.singhal1/%s/ancestral_allele/ancestral_allele.%s.csv' % (sp, chr)
-	sites_file = '/mnt/gluster/home/sonal.singhal1/%s/phasing/PIR_approach/%s_sites.csv' % (sp, chr)
+	sites_file = '/mnt/gluster/home/sonal.singhal1/%s/analysis/LDhelmet/%s_sites.csv' % (sp, chr)
 	out_file = '/mnt/gluster/home/sonal.singhal1/%s/ancestral_allele/ancestral_allele.%s.ldhelmet.txt' % (sp, chr)
 
 	anc_info = {}

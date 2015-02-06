@@ -7,87 +7,72 @@ from itertools import izip
 import argparse
 import gzip
 import os
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--sp", help="species for which to run the analysis")
 args = parser.parse_args()
 sp = args.sp
 
-putative_hotspots = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/LDhelmet/LTF_ZF.putative_hotspots.csv'
+putative_hotspots = glob.glob('/mnt/gluster/home/sonal.singhal1/*/analysis/LDhelmet/*heat5*out')
 chrs = ['chr1', 'chr1A', 'chr2', 'chr3', 'chr4', 'chr4A', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9', \
-		'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr27', 'chrZ']
+	'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chrZ']
+results_dir = '/mnt/gluster/home/sonal.singhal1/%s/analysis/hotspots/seqldhot_hotspots/' % sp
 
 if sp == 'ZF':
-	vcfbase = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.repeatmasked.filtered.nomendel.phased.vcf.gz'
+	hapbase = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/PIR_approach/finch19/%s_haplotypes.haps'
+	rho_dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/LDhelmet/without_fam/maps/'
+	theta = 0.00675
 if sp == 'LTF':
-	vcfbase = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.%s.filtered.coverage.repeatmasked.vqsr.phased.vcf.gz'
-rho_dir = '/mnt/gluster/home/sonal.singhal1/%s/analysis/LDhelmet/maps/' % sp
+	hapbase = '/mnt/gluster/home/sonal.singhal1/LTF/phasing/PIR_approach/%s_haplotypes.haps'
+	rho_dir = '/mnt/gluster/home/sonal.singhal1/LTF/analysis/LDhelmet/old/maps/'
+	theta = 0.00472
 
 # take this much sequence around the putative hotspot
 block = 50e3
-results_dir = '/mnt/gluster/home/sonal.singhal1/%s/analysis/hotspots/' % sp
 
-if sp == 'LTF':
-	theta = 0.0046
-if sp == 'ZF': 
-	theta = 0.0058
+# get the most conservative set of hotspots
+hotspots = {}
+for putative_hotspot in putative_hotspots: 
+	d = pd.read_csv(putative_hotspot)
+	d = d[(d.block == 2000) & (d.flank == 40000)]
+	for chr, start in zip(d.chr, d.spot_start):
+		if chr not in hotspots:
+			hotspots[chr] = []
+		if len(hotspots[chr]) > 5000:
+			min_dist = np.min([abs(x - start) for x in hotspots[chr]])
+			if min_dist > 0:
+				hotspots[chr].append(start)
+		else:
+			hotspots[chr].append(start)
 
-# get the most conservative set of hotspots 
-d = pd.read_csv(putative_hotspots)
-d = d[(d.spot_size == 2000) & (d.flank_size == 40000)]
-d = d[d.chr.isin(chrs)]
 
-sh = open('%scommands.sh' % results_dir, 'w')
+sh = open('/mnt/lustre/home/sonal.singhal1/scripts/seqldhot_commands_%s.sh' % sp, 'w')
 # now start to create the files
-for chr, chrhot in d.groupby('chr'):
-	vcf_file = vcfbase % chr
-	if chr == 'chrZ' and sp == 'ZF':
-		vcf_file = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.chrZ.coverage.repeatmasked.filtered.recodedsex.vqsr.phased.vcf.gz'
-	if chr == 'chrZ' and sp == 'LTF':
-		vcf_file = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.chrZ.filtered.coverage.repeatmasked.recodedsex.vqsr.phased.vcf.gz'
+for chr in hotspots:
+	hap_file = hapbase % chr
 	rho_file = '%s%s.window10000.bpen100.rm.txt' % (rho_dir, chr)
 
 	rhos = pd.read_csv(rho_file)
 	
 	haplo = {}
 
-	f = gzip.open(vcf_file, 'r')
+	f = open(hap_file, 'r')
 	for l in f:
-		if not re.search('#', l):
-			d = re.split('\s+', l.rstrip())
+		d = re.split('\s+', l.rstrip())
+		genos = d[5:]
+		count0 = genos.count('0')
+		count1 = genos.count('1')
 
-			# phased site
-			if re.search('\|', ' '.join(d[9:])):
-				pos = int(d[1])
-
-				keep = True
-				genos = []
-
-				# multiallelic site
-				if re.search(',', d[4]):
-					keep = False
-
-				for geno in d[9:]:
-					geno = re.search('^([^:]+)', geno).group(1)
-					genos = genos + re.split('\|', geno)
-
-				count0 = genos.count('0')
-				count1 = genos.count('1')
-
-				# singleton
-				if count0 ==  1 or count1 == 1:
-					keep = False
-
-				# these are the only sites we want
-				# they are within the chunk to analyze, are greater than singletons and aren't in rm
-				if keep:
-					for ix, base in enumerate(genos):
-						if ix not in haplo:
-							haplo[ix] = {}
-						haplo[ix][pos] = base
+		# ditch singleton
+		if count0 >  1 and count1 > 1:
+			for ix, base in enumerate(genos):
+				if ix not in haplo:
+					haplo[ix] = {}
+				haplo[ix][int(d[2])] = base
 	f.close()
 
-	for start in chrhot.spot_start:
+	for start in hotspots[chr]:
 		out = '%sputative_hotspot_%s_%s.seqLDhot.txt' % (results_dir, chr, start)
 
 		if not os.path.isfile(out):
@@ -103,6 +88,11 @@ for chr, chrhot in d.groupby('chr'):
 			back_rho = back_rho[ back_rho.window_start  <= seq_end ].rate
 			back_rho = filter(lambda x: np.isfinite(x), back_rho)
 			back_rho = np.mean(back_rho)
+			if np.isfinite(back_rho):
+				if back_rho == 0:
+					back_rho = 0.0001
+			else:
+				back_rho = 0.0001
 
 			sorted_sites = sorted(sites)
 			# next, let's make the haplotypes

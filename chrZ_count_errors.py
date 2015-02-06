@@ -1,10 +1,10 @@
 import re
 import gzip
 
-ped = '/mnt/gluster/home/sonal.singhal1/ZF/zf_inds_plink.ped'
-# ped = '/mnt/gluster/home/sonal.singhal1/LTF/LTF_inds_plink.ped'
-vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.chrZ.coverage.repeatmasked.vqsr.vcf.gz'
-# vcf = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.chrZ.filtered.coverage.repeatmasked.vqsr.vcf.gz'
+# ped = '/mnt/gluster/home/sonal.singhal1/ZF/zf_inds_plink.ped'
+ped = '/mnt/gluster/home/sonal.singhal1/LTF/LTF_inds_plink.ped'
+# vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/gatk.ug.all_zf.chrZ.coverage.repeatmasked.filtered.nomendel.shared.vqsr2.vcf.gz'
+vcf = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.chrZ.coverage.repeatmasked.filtered.vqsr2.vcf.gz'
 # output data
 # proportion wrong; if 3 or more females are heterozygous at a given site, call it a bad site
 filter = 3

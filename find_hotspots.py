@@ -5,7 +5,7 @@ from itertools import izip
 
 def find_hotspots(file, out, chr, block_size, flank_size):
 	d = pd.read_csv(file, sep=" ", skiprows=3, header=None, 
-		names=['left_snp', 'right_snp', 'meanrho', 'p0.05', 'p0.95'])
+		names=['left_snp', 'right_snp', 'meanrho', 'p0.025', 'p0.975'])
 	o = open(out, 'w')
 	o.write('chr,block_start,block_end,flank_rate,block_rate,rate_ratio\n')
 
@@ -95,7 +95,7 @@ def main():
 	flank_size = int(args.flank)
 	sp = args.sp
 	
-	dir = '/mnt/gluster/home/sonal.singhal1/%s/analysis/LDhelmet/with_fam/' % (sp)
+	dir = '/mnt/gluster/home/sonal.singhal1/%s/analysis/LDhelmet/' % (sp)
 	out = '%sputative_hotspots/%s.putativehotspots.block%s_flank%s.out' % (dir, chr, block_size, flank_size)
 	file = '%smaps/%s_recombination_bpen5.txt' % (dir, chr)
 

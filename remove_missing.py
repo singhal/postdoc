@@ -8,10 +8,10 @@ parser.add_argument("--chr", help="chromosome for which to run analysis")
 args = parser.parse_args()
 chr = args.chr
 
-file = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/gatk.ug.all_zf.%s.coverage.filtered.repeatmasked.recoded_biallelicSNPs.nomendel.vcf.gz' % chr
+file = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/for_shapeit/gatk.ug.finch21.%s.allfilters.recoded_biallelicSNPs.vcf.gz' % chr
 
 f = gzip.open(file, 'r')
-out = file.replace('nomendel', 'nomendel.nomissing')
+out = file.replace('.vcf.gz', '.nomissing.vcf.gz')
 o = gzip.open(out, 'w')
 for l in f:
 	if re.search('^#', l):

@@ -27,21 +27,24 @@ def get_vcf(vcffile, type):
                                 # not useful for anything but to show ref, and we already have that
                                 allele_counts = dict()
                                 for i in range(len(alleles)):
-                                        allele_counts[alleles[i]] = len(re.findall('%s\/' % i, l)) + len(re.findall('\/%s' % i, l))
+                                        allele_counts[alleles[i]] = len(re.findall('\s%s[\/|\:]' % i, l)) + len(re.findall('\/%s' % i, l))
                                 tot_n = sum(allele_counts.values())
                                 
-				af_real = dict()
+				if tot_n > 0:
 
-				for i in allele_counts:
-                                        af = allele_counts[i] / float(tot_n)
-                                        if af > 0:
-                                        	af_real[i] = '%.3f' % af
-				# for the ingroup, do not want to include fixed or polyallelic sites, so deal with that here
-				if type == 'in':
-					if len(af_real) == 2:
-                                		var[int(d[1])] = af_real
-				else:
-					var[int(d[1])] = af_real
+					af_real = dict()
+	
+					for i in allele_counts:
+
+                	                        af = allele_counts[i] / float(tot_n)
+                        	                if af > 0:
+                                	        	af_real[i] = '%.3f' % af
+					# for the ingroup, do not want to include fixed or polyallelic sites, so deal with that here
+					if type == 'in':
+						if len(af_real) == 2:
+                                			var[int(d[1])] = af_real
+					else:
+						var[int(d[1])] = af_real
         file.close()
         return var
 
@@ -141,20 +144,31 @@ def main():
         args = parser.parse_args()
         chr = args.chr
 
-	vcf_in = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.filtered.recoded_biallelicSNPs.nomendel.vcf.gz' % chr
-	vcf_out1 = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.%s.filtered.coverage.vqsr.vcf.gz' % chr
-	vcf_out2 = '/mnt/gluster/home/sonal.singhal1/DBF/after_vqsr/by_chr/gatk.ug.dbf.%s.filtered.coverage.vqsr.vcf.gz' % chr
-	out_file = '/mnt/gluster/home/sonal.singhal1/ZF/ancestral_allele/ancestral_allele.%s.csv' % chr
-
+	# LTF
+	# vcf_in = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/for_shapeit/gatk.ug.ltf.%s.allfilters.recoded_biallelicSNPs.vcf.gz' % chr
+	# if chr == 'chrZ':
+	#	vcf_in = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/for_shapeit/gatk.ug.ltf.chrZ.allfilters.recodedsex.recoded_biallelicSNPs.vcf.gz'
+	# vcf_out1 = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/gatk.ug.all_zf.%s.coverage.repeatmasked.filtered.vqsr2.vcf.gz' % chr
+	# out_file = '/mnt/gluster/home/sonal.singhal1/LTF/ancestral_allele/ancestral_allele.%s.csv' % chr
 	# all genomes must be at 60chr per line!!!
-	# masked genome files for each species; genome_out1 and genome_out2 are outgroup
-	genome_out1 = '/mnt/gluster/home/sonal.singhal1/LTF/masked_genome/LTF.masked_genome.fa'
+	# genome_out1 = '/mnt/gluster/home/sonal.singhal1/ZF/masked_genome/ZF.masked_genome.repeat_masked.switch_masked.fa'
+
+	# ZF
+	vcf_in = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/for_shapeit/gatk.ug.finch19.%s.allfilters.recoded_biallelicSNPs.nomissing.vcf.gz' % chr
+        if chr == 'chrZ':
+                vcf_in = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/for_shapeit/gatk.ug.finch19.chrZ.allfilters.recodedsex.recoded_biallelicSNPs.vcf.gz'
+	vcf_out1 = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.%s.coverage.repeatmasked.filtered.vqsr2.vcf.gz' % chr
+        out_file = '/mnt/gluster/home/sonal.singhal1/ZF/ancestral_allele/ancestral_allele.%s.csv' % chr
+        genome_out1 = '/mnt/gluster/home/sonal.singhal1/LTF/masked_genome/LTF.masked_genome.repeat_masked.fa'
+       
+	# same for both species
+	vcf_out2 = '/mnt/gluster/home/sonal.singhal1/DBF/after_vqsr/by_chr/gatk.ug.dbf.%s.filtered.coverage.vqsr.vcf.gz' % chr
 	genome_out2 = '/mnt/gluster/home/sonal.singhal1/DBF/masked_genome/DBF.masked_genome.fa'
 	# other outgroups, even further
 	genome_out3 = '/mnt/gluster/home/sonal.singhal1/Darwin/g_magnirostris/Geospiza_magnirostris.fasta'
 	genome_out4 = '/mnt/gluster/home/sonal.singhal1/Darwin/g_fortis/Geospiza_fortis.fasta'
 	genome_ref = '/mnt/gluster/home/sonal.singhal1/reference/taeGut1_60.bamorder.fasta'
-
+	
 	var_in = get_vcf(vcf_in, 'in')
 	var_out1 = get_vcf(vcf_out1, 'out')
 	var_out2 = get_vcf(vcf_out2, 'out')

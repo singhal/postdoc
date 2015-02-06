@@ -25,7 +25,7 @@ if sp == 'ZF':
 	nind = {}
 	for chr in chr_lengths:
 		nind[chr] = 38
-	nind['chrZ'] = 29
+	nind['chrZ'] = 28
 	vcfs = glob.glob('/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/*phased*')
 if sp == 'LTF':
 	nind = {}

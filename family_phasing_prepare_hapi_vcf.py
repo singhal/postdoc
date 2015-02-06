@@ -7,68 +7,35 @@ parser.add_argument('--chr', help='chromosome')
 args = parser.parse_args()
 chr = args.chr
 
-fam_vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/gatk.ug.all_zf.%s.coverage.filtered.repeatmasked.vqsr.vcf.gz' % chr
-unrel_vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/for_shapeit/gatk.ug.unrel_zf.%s.coverage.repeatmasked.filtered.recoded_biallelicSNPs.nomendel.vcf.gz'  % chr
-error_file = '/mnt/gluster/home/sonal.singhal1/ZF/mendelian_errors/plink_results/all_zf.me.%s.mendel' % chr
-sites_file = '/mnt/gluster/home/sonal.singhal1/ZF/mendelian_errors/all_zf.%s.map' % chr
+unrel_vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/for_shapeit/gatk.ug.finch19.%s.allfilters.recoded_biallelicSNPs.vcf.gz'  % chr
+locs_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/input_files/%s.hapi.noswitch.locs' % chr
 # note will only use parents 4 haplotypes because the kids haplotypes are related
-hapi_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/hapi.%s.csv' % chr
+hapi_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/output_files/%s.noswitch.csv' % chr
 
 # reference files for shapeit
-hap_ref = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/for_shapeit/%s.hap.gz' % chr
-leg_ref = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/for_shapeit/%s.legend.gz' % chr
-samp_ref = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/for_shapeit/%s.sample' % chr
-
-sites_f = open(sites_file, 'r')
-sites = {}
-for l in sites_f:
-        d = re.split('\s+', l)
-        sites[d[1]] = int(d[3])
-sites_f.close()
-        
-errors = {}
-error_f = open(error_file, 'r')
-junk = error_f.next()
-for l in error_f:
-        d = re.split('\s+', l)
-        errors[sites[d[4]]] = 1
-error_f.close()
-sites = {}
+hap_ref = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/for_shapeit/%s.hap.gz' % chr
+leg_ref = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/for_shapeit/%s.legend.gz' % chr
+samp_ref = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/for_shapeit/%s.sample' % chr
 
 fam_sites = {}
-v = gzip.open(fam_vcf, 'r')
-for l in v:
-        if re.search('^#CHROM', l):
-                d = re.split('\t', l.rstrip())
-                inds = d[-5:]
-        if not re.search('^#', l):
-                d = re.split('\t', l.rstrip())
-                alleles = [d[3]] + re.split(',', d[4])
-                indel = False
-                for allele in alleles:
-                        if len(allele) > 1:
-                                indel = True
-                if not indel and len(alleles) == 2:
-                        if int(d[1]) not in errors:
-                                all_missing = True
-                                for geno in d[-5:]:
-                                        geno = re.search('^(\S/\S)', geno).group(1)
-                                        if geno != './.':
-                                                all_missing = False
-                                if not all_missing:
-					fam_sites[ int(d[1]) ] = 1
-v.close()
+f = open(locs_file, 'r')
+for l in f:
+	d = re.split('\s+', l)
+	fam_sites[ int(d[2]) ] = 1
+f.close()
 
 snps = {}
 v = gzip.open(unrel_vcf, 'r')
-out = unrel_vcf.replace('.vcf.gz', '.trimmed.vcf.gz')
+out = unrel_vcf.replace('.vcf.gz', '.nomissing.vcf.gz')
 o = gzip.open(out, 'w')
 for l in v:
 	if not re.search('^#', l):
                 d = re.split('\t', l.rstrip())
 		if int(d[1]) in fam_sites:
-			snps[ int(d[1]) ] = {'ref': d[3], 'alt': d[4]}
-			o.write(l)
+			num_missing = len(re.findall('\.\/\.', l))
+			if num_missing < len(d[9:]):
+				snps[ int(d[1]) ] = {'ref': d[3], 'alt': d[4]}
+				o.write(l)
 	else:
 		o.write(l)
 v.close()
@@ -110,4 +77,3 @@ hap_r = gzip.open(hap_ref, 'w')
 for pos in sorted(haps.keys()):
 	hap_r.write(' '.join([str(x) for x in haps[pos]]) + '\n')
 hap_r.close()
-		

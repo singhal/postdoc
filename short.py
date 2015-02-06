@@ -1,6 +1,6 @@
 import glob
 
-files = glob.glob('x*')
+files = glob.glob('la*')
 
 for ix, file in enumerate(files):
-	print 'echo \"sh %s\" | qsub -l h_vmem=10G -cwd -V -j y -N \'find%s\'' % (file, ix)
+	print 'echo \"sh %s\" | qsub -l h_vmem=5g -cwd -V -j y -N \'lfind%s\'' % (file, ix)

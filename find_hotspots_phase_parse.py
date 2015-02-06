@@ -30,7 +30,7 @@ def parse_file(file, heat_cutoff):
 		if (os.path.getsize(file) > 0):
 			d = pd.read_csv(file, header=None, sep="\s+",names=['rho','start','end','heat'])					
 		
-			posterior = d[d.heat > 10].shape[0] / float(d.shape[0])
+			posterior = d[d.heat > heat_cutoff].shape[0] / float(d.shape[0])
 			mean_heat = d.heat.mean()
 			mean_025 = d.heat.quantile(q=0.025)
 			mean_975 = d.heat.quantile(q=0.975)

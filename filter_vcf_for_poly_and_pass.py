@@ -1,24 +1,26 @@
 import re
 import glob
 import gzip
+import argparse
 
-dir = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/'
-files = glob.glob('/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/*vcf.gz')
+parser = argparse.ArgumentParser()
+parser.add_argument("--chr", help="chromosome for which to run analysis")
+args = parser.parse_args()
+chr = args.chr
 
-for file in files:
-	chr = re.search('(chr[a-z|A-Z|0-9]+)', file).group(1)
-	out = '%sgatk.ug.all_zf.%s.coverage.filtered.vqsr.vcf.gz' % (dir, chr)
+vcf = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.%s.coverage.repeatmasked.vqsr2.vcf.gz' % (chr)
+out = vcf.replace('repeatmasked', 'repeatmasked.filtered')
+
+out_f = gzip.open(out, 'w')
+in_f = gzip.open(vcf, 'r')
 	
-	out_f = gzip.open(out, 'w')
-	in_f = gzip.open(file, 'r')
-	
-	for l in in_f:
-		if re.search('^#', l):
-			out_f.write(l)
-		else:
-			d = re.split('\s+', l)
-			if d[4] !=  '.':
-				if re.search('PASS', d[6]):
-					out_f.write(l)
-	out_f.close()
-	in_f.close()
+for l in in_f:
+	if re.search('^#', l):
+		out_f.write(l)
+	else:
+		d = re.split('\t', l)
+		if d[4] != '.':
+			if d[6] == 'PASS':
+				out_f.write(l)
+out_f.close()
+in_f.close()
