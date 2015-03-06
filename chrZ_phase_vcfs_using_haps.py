@@ -9,12 +9,13 @@ chr = 'chrZ'
 sp = args.sp
 
 if sp == 'ZF':
-	vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.chrZ.coverage.repeatmasked.filtered.recodedsex.vqsr.vcf.gz'
+	vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/gatk.ug.unrel_zf.chrZ.coverage.repeatmasked.filtered.nomendel.shared.recodedsex.vqsr2.vcf.gz'
+	haps = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/PIR_approach/finch19/%s_haplotypes.haps' % (chr)
 elif sp == 'LTF':
-	vcf = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.chrZ.filtered.coverage.repeatmasked.recodedsex.vqsr.vcf.gz'
+	vcf = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.chrZ.coverage.repeatmasked.filtered.recodedsex.vqsr2.vcf.gz'
+	haps = '/mnt/gluster/home/sonal.singhal1/LTF/phasing/PIR_approach/%s_haplotypes.haps' % (chr)
 
 ##############
-haps = '/mnt/gluster/home/sonal.singhal1/%s/phasing/PIR_approach/results/%s_haplotypes.haps' % (sp, chr)
 
 def snps(snp, ref, alt):
 	if snp == '0':
@@ -31,7 +32,7 @@ for ix, l in enumerate(f):
 	hap[pos] = [snps(x, d[3], d[4]) for x in d[5:]]
 f.close()
 
-out = vcf.replace('vcf.gz', 'phased.vcf.gz')
+out = vcf.replace('vqsr2.vcf.gz', 'phased.vqsr2.vcf.gz')
 f = gzip.open(vcf, 'r')
 o = gzip.open(out, 'w')
 

@@ -4,6 +4,7 @@ import re
 import numpy as np
 from itertools import izip
 import glob
+import os
 
 def find_hotspots(file, block_size, flank_size):
 	d = pd.read_csv(file, sep=" ", skiprows=3, header=None, names=['left_snp', 'right_snp', 'meanrho', 'p025', 'p975'])
@@ -51,6 +52,10 @@ def find_hotspots(file, block_size, flank_size):
 				elif (start >= chunks[chunk][0] and start <= chunks[chunk][1]) and end > chunks[chunk][1]:
 					rate_mult = (chunks[chunk][1] - start) * rate
 					diff = (chunks[chunk][1] - start)
+				# hanging off on both sides
+                                elif start <= chunks[chunk][0] and end >= chunks[chunk][1]:
+                                        diff = (chunks[chunk][1] - chunks[chunk][0])
+                                        rate_mult = diff * rate
 				chunk_rho[chunk]['rho'] += rate_mult
 				chunk_rho[chunk]['bp'] += diff
 
@@ -66,9 +71,12 @@ def main():
 	block_size = 2000
 	flank_size = 40000
 
-	files = glob.glob('/mnt/gluster/home/sonal.singhal1/simulations/FDR/maps/*txt')
+	files = glob.glob('/mnt/gluster/home/sonal.singhal1/simulations/shared/*/maps/*txt')
+	files = filter(lambda x: not re.search('hotspot', x), files)
 	for file in files:
-		if not re.search('hotspots', file):
+		out = file.replace('.txt', '_hotspots_blocksize%s_flanksize%s.txt' % (block_size, flank_size))
+		if not os.path.isfile(out):
+			# print file
 			find_hotspots(file, block_size, flank_size) 
 
 if __name__ == "__main__":

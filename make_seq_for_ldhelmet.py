@@ -72,12 +72,17 @@ def main():
         parser.add_argument("--chr", help="chromosome for which to run analysis")
         args = parser.parse_args()
         chr = args.chr
-
-	hap_file = '/mnt/gluster/home/sonal.singhal1/LTF/phasing/PIR_approach/%s_haplotypes.haps' % chr
-	out_file = '/mnt/gluster/home/sonal.singhal1/LTF/analysis/LDhelmet/%s_haplotypes.fasta' % chr
-	site_file = '/mnt/gluster/home/sonal.singhal1/LTF/analysis/LDhelmet/%s_sites.csv' % chr
+	
+	hap_file = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/PIR_approach/finch19/%s_haplotypes.haps' % chr
+	out_file = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/LDhelmet/%s_haplotypes.fasta' % chr
+	site_file = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/LDhelmet/%s_sites.csv' % chr
+	masked_genome = '/mnt/gluster/home/sonal.singhal1/ZF/masked_genome/ZF.masked_genome.repeat_masked.switch_masked.fa'
+	
+	# hap_file = '/mnt/gluster/home/sonal.singhal1/LTF/phasing/PIR_approach/%s_haplotypes.haps' % chr
+	# out_file = '/mnt/gluster/home/sonal.singhal1/LTF/analysis/LDhelmet/%s_haplotypes.fasta' % chr
+	# site_file = '/mnt/gluster/home/sonal.singhal1/LTF/analysis/LDhelmet/%s_sites.csv' % chr
 	genome = '/mnt/gluster/home/sonal.singhal1/reference/taeGut1_60.bamorder.fasta'
-	masked_genome = '/mnt/gluster/home/sonal.singhal1/LTF/masked_genome/LTF.masked_genome.repeat_masked.fa'
+	# masked_genome = '/mnt/gluster/home/sonal.singhal1/LTF/masked_genome/LTF.masked_genome.repeat_masked.fa'
 	min_allele = 1
 
 	chr_as_list = get_chromosome(genome, chr)

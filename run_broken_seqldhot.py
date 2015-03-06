@@ -2,19 +2,16 @@ import glob
 import re
 import os
 
-dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspots/hotspot_checks/seqldhot_sensitivity/'
-files = glob.glob(dir + '*in')
-
+dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspots/seqldhot_hotspots/'
+files = glob.glob(dir + '*txt')
 
 for file in files:
-	out = file.replace('.in', '.sum')
-	txtfile = file.replace('.in', '.txt')
-	txtfile = re.sub('\d\.\d\.seqLDhot', 'seqLDhot', txtfile)
+	out = file + '.sum'
 	# assume that things didn't work
 	good = False
 	if os.path.isfile(out):
 		# check if the file ran and is complete
-		f = open(txtfile, 'r')
+		f = open(file, 'r')
 		for l in f:
 			if re.search('Positions', l):
 				positions = f.next().rstrip()
@@ -35,5 +32,5 @@ for file in files:
 				good = True
 
 	if not good:
-		out = out.replace('.sum', '')
-		print '/mnt/lustre/home/sonal.singhal1/bin/sequenceLDhot/sequenceLDhot %s %s %s' % (file, txtfile, out)
+		infile = file.replace('txt', 'in')
+		print '/mnt/lustre/home/sonal.singhal1/bin/sequenceLDhot/sequenceLDhot %s %s' % (infile, file)

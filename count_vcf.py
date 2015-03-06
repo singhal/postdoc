@@ -12,7 +12,7 @@ chr_lengths = { 'chr10': 20806668, 'chr11': 21403021, 'chr12': 21576510, 'chr13'
                 'chr7': 39844632, 'chr8': 27993427, 'chr9': 27241186, 'chrLG2': 109741,
                 'chrLG5': 16416, 'chrLGE22': 883365, 'chrZ': 72861351 }
 
-files = glob.glob('/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/for_shapeit/*ltf*')
+files = glob.glob('/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/*phased*vqsr2*')
 
 for file in files:
 	chr = re.search('(chr[0-9|A-Z]+)', file).group(1)

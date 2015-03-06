@@ -8,8 +8,8 @@ parser.add_argument("--chr", help="chromosome for which to run analysis")
 args = parser.parse_args()
 chr = args.chr
 
-vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/gatk.ug.all_zf.%s.coverage.repeatmasked.filtered.nomendel.shared.vqsr2.vcf.gz' % (chr)
-out = vcf.replace('shared', 'shared.noswitch')
+vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.%s.coverage.repeatmasked.filtered.nomendel.vqsr2.vcf.gz' % (chr)
+out = vcf.replace('nomendel', 'nomendel.noswitch')
 switches = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/family_approach/hapi/breaks/badintervals.%s.hapi.csv' % chr
 
 ditch = {}

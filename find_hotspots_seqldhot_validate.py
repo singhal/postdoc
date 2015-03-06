@@ -39,17 +39,17 @@ for putative_hotspot in putative_hotspots:
 	for chr, start in zip(d.chr, d.spot_start):
 		if chr not in hotspots:
 			hotspots[chr] = []
-		if len(hotspots[chr]) > 5000:
+		if len(hotspots[chr]) > 0:
 			min_dist = np.min([abs(x - start) for x in hotspots[chr]])
-			if min_dist > 0:
+			if min_dist > 3000:
 				hotspots[chr].append(start)
 		else:
 			hotspots[chr].append(start)
 
-
-sh = open('/mnt/lustre/home/sonal.singhal1/scripts/seqldhot_commands_%s.sh' % sp, 'w')
+chrs = ['chrZ']
+sh = open('/mnt/lustre/home/sonal.singhal1/scripts/seqldhot_commands_%s_chrZ.sh' % sp, 'w')
 # now start to create the files
-for chr in hotspots:
+for chr in chrs:
 	hap_file = hapbase % chr
 	rho_file = '%s%s.window10000.bpen100.rm.txt' % (rho_dir, chr)
 
@@ -75,54 +75,53 @@ for chr in hotspots:
 	for start in hotspots[chr]:
 		out = '%sputative_hotspot_%s_%s.seqLDhot.txt' % (results_dir, chr, start)
 
-		if not os.path.isfile(out):
-			seq_start = start - ( block / 2.0 )
-        		if seq_start < 1:
-                		seq_start = 1
-			seq_end = start + ( block / 2.0 )
+		seq_start = start - ( block / 2.0 )
+        	if seq_start < 1:
+                	seq_start = 1
+		seq_end = start + ( block / 2.0 )
 
-			sites = filter(lambda x: x >= seq_start, haplo[0].keys())
-			sites = filter(lambda x: x <= seq_end, sites)
+		sites = filter(lambda x: x >= seq_start, haplo[0].keys())
+		sites = filter(lambda x: x <= seq_end, sites)
 
-			back_rho = rhos[ rhos.window_end >= seq_start ]
-			back_rho = back_rho[ back_rho.window_start  <= seq_end ].rate
-			back_rho = filter(lambda x: np.isfinite(x), back_rho)
-			back_rho = np.mean(back_rho)
-			if np.isfinite(back_rho):
-				if back_rho == 0:
-					back_rho = 0.0001
-			else:
+		back_rho = rhos[ rhos.window_end >= seq_start ]
+		back_rho = back_rho[ back_rho.window_start  <= seq_end ].rate
+		back_rho = filter(lambda x: np.isfinite(x), back_rho)
+		back_rho = np.mean(back_rho)
+		if np.isfinite(back_rho):
+			if back_rho == 0:
 				back_rho = 0.0001
+		else:
+			back_rho = 0.0001
 
-			sorted_sites = sorted(sites)
-			# next, let's make the haplotypes
-			tmp_haplo = {}
-			for ix in sorted(haplo.keys()):
-                                hap = ''
-                                for pos in sorted_sites:
-                                        hap += haplo[ix][pos]
-				if hap not in tmp_haplo:
-					tmp_haplo[hap] = 0
-				tmp_haplo[hap] += 1
+		sorted_sites = sorted(sites)
+		# next, let's make the haplotypes
+		tmp_haplo = {}
+		for ix in sorted(haplo.keys()):
+			hap = ''
+			for pos in sorted_sites:
+				hap += haplo[ix][pos]
+			if hap not in tmp_haplo:
+				tmp_haplo[hap] = 0
+			tmp_haplo[hap] += 1
 
-			# next, let's make the sequenceLDhot
-        		o = open(out, 'w')
-        		o.write('Distinct = %s\nGenes = %s\nLoci = %s\n' % (len(tmp_haplo), len(haplo), len(sites)))
-			o.write('I=1\nK = -2\nPositions of loci:\n')
-			o.write(' '.join([str(x - int(seq_start) + 1) for x in sorted_sites]) + '\n')
-        		o.write('Haplotypes\n')
-        		for hap, count in tmp_haplo.items():
-				o.write('\t%s %s\n' % (hap, count))			
-			o.write('#')
-        		o.close()
+		# next, let's make the sequenceLDhot
+        	o = open(out, 'w')
+        	o.write('Distinct = %s\nGenes = %s\nLoci = %s\n' % (len(tmp_haplo), len(haplo), len(sites)))
+		o.write('I=1\nK = -2\nPositions of loci:\n')
+		o.write(' '.join([str(x - int(seq_start) + 1) for x in sorted_sites]) + '\n')
+        	o.write('Haplotypes\n')
+        	for hap, count in tmp_haplo.items():
+			o.write('\t%s %s\n' % (hap, count))			
+		o.write('#')
+        	o.close()
 	
-			out_in = '%sputative_hotspot_%s_%s.seqLDhot.in' % (results_dir, chr, start)
-			o = open(out_in, 'w')
-			o.write('Number of runs = 5000\nMIN number of iterations per hotspots = 100\ndriving values (for rho) = 2\n')
-			o.write('background rho = %.3f\ntheta (per site) = %s\n' % (back_rho * 1000, theta))
-			o.write('abs grid for hotspot likelihood\n0.5 40\nrel grid for hotspots likelihood\n5 100\n')
-			o.write(' sub-region (number of SNPS; length (bps); frequency (bps))\n')
-			o.write(' 10 2000 1000\n#\n')
-			o.close()
-			sh.write('/mnt/lustre/home/sonal.singhal1/bin/sequenceLDhot/sequenceLDhot %s %s\n' % (out_in, out))
+		out_in = '%sputative_hotspot_%s_%s.seqLDhot.in' % (results_dir, chr, start)
+		o = open(out_in, 'w')
+		o.write('Number of runs = 5000\nMIN number of iterations per hotspots = 100\ndriving values (for rho) = 2\n')
+		o.write('background rho = %.3f\ntheta (per site) = %s\n' % (back_rho * 1000, theta))
+		o.write('abs grid for hotspot likelihood\n0.5 40\nrel grid for hotspots likelihood\n5 100\n')
+		o.write(' sub-region (number of SNPS; length (bps); frequency (bps))\n')
+		o.write(' 10 2000 1000\n#\n')
+		o.close()
+		sh.write('/mnt/lustre/home/sonal.singhal1/bin/sequenceLDhot/sequenceLDhot %s %s\n' % (out_in, out))
 sh.close()

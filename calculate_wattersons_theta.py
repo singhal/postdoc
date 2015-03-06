@@ -18,7 +18,10 @@ chr_lengths = {	'chr10': 20806668, 'chr11': 21403021, 'chr12': 21576510, 'chr13'
                 'chr4A': 20704505, 'chr4': 69780378, 'chr5': 62374962, 'chr6': 36305782,
                 'chr7': 39844632, 'chr8': 27993427, 'chr9': 27241186, 'chrLG2': 109741,
                 'chrLG5': 16416, 'chrLGE22': 883365, 'chrZ': 72861351}
-genome = '/mnt/gluster/home/sonal.singhal1/%s/masked_genome/%s.masked_genome.repeat_masked.fa' % (sp, sp)
+if sp == 'LTF':
+	genome = '/mnt/gluster/home/sonal.singhal1/LTF/masked_genome/LTF.masked_genome.repeat_masked.fa'
+if sp == 'ZF':
+	genome = '/mnt/gluster/home/sonal.singhal1/ZF/masked_genome/ZF.masked_genome.repeat_masked.switch_masked.fa'
 window = 50000
 
 if sp == 'ZF':

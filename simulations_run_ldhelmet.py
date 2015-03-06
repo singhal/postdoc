@@ -3,7 +3,7 @@ import glob
 import subprocess
 import os
 
-dir = '/mnt/gluster/home/sonal.singhal1/simulations/FDR/'
+dir = '/mnt/gluster/home/sonal.singhal1/simulations/shared/ZF/'
 fasta_files = glob.glob('%shaplo/*fa' % dir)
 
 for bpen in [5]:

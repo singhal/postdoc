@@ -1,10 +1,10 @@
 import re
 import gzip
 
-# ped = '/mnt/gluster/home/sonal.singhal1/ZF/zf_inds_plink.ped'
-ped = '/mnt/gluster/home/sonal.singhal1/LTF/LTF_inds_plink.ped'
-# vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/gatk.ug.all_zf.chrZ.coverage.repeatmasked.filtered.nomendel.shared.vqsr2.vcf.gz'
-vcf = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.chrZ.coverage.repeatmasked.filtered.vqsr2.vcf.gz'
+ped = '/mnt/gluster/home/sonal.singhal1/ZF/zf_inds_plink.ped'
+# ped = '/mnt/gluster/home/sonal.singhal1/LTF/LTF_inds_plink.ped'
+vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/gatk.ug.all_zf.chrZ.coverage.repeatmasked.filtered.nomendel.shared.vqsr2.vcf.gz'
+# vcf = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.chrZ.coverage.repeatmasked.filtered.vqsr2.vcf.gz'
 # output data
 # proportion wrong; if 3 or more females are heterozygous at a given site, call it a bad site
 filter = 3
@@ -26,6 +26,7 @@ all_female_geno = 0
 wrong_female_geno = 0
 filtered_sites = 0
 all_sites = 0
+ind_wrong = {}
 
 inds = []
 f = gzip.open(vcf, 'r')
@@ -33,6 +34,8 @@ for l in f:
 	l = l.rstrip()
 	if re.search('#CHROM', l):
 		inds = re.split('\t', l)[9:]
+		for ind in inds:
+			ind_wrong[ind] = 0
 	elif re.search('PASS', l):
 		d = re.split('\t', l)
 		all_sites += 1
@@ -47,6 +50,7 @@ for l in f:
 			# (also, no PAR!)
 			if sex[ind] == 'F':
 				if het:
+					ind_wrong[ind] += 1
 					miscalled_hets += 1
 					all_female_geno += 1
 					wrong_female_geno += 1
@@ -60,3 +64,6 @@ print 'all_sites: %s' % all_sites
 print 'filtered_sites: %s' % filtered_sites
 print 'all_female_geno: %s' % all_female_geno
 print 'wrong_female_geno: %s' % wrong_female_geno
+
+for ind, count in ind_wrong.items():
+	print 'Num wrong in %s: %s' % (ind, count) 

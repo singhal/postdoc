@@ -3,12 +3,12 @@ import re
 import pandas as pd
 import os
 import numpy as np
+import sys
 
+# haplotype samples
+hap_dir = '/mnt/gluster/home/sonal.singhal1/ZF/phasing/PIR_approach/phase_samples_finch19/'
 # to get the background rate
-if sp == 'ZF':
-	rho_dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/LDhelmet/without_fam/maps/'
-if sp == 'LTF':
-	rho_dir = '/mnt/gluster/home/sonal.singhal1/LTF/analysis/LDhelmet/old/maps/'
+rho_dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/LDhelmet/without_fam/maps/'
 # take this much sequence around the putative hotspot
 block = 50e3
 # output directory
@@ -18,35 +18,20 @@ command_sh = results_dir + 'seqldhot.sh'
 # number of samples to test
 samp = 3
 # file with validated hotspots
-d = pd.read_csv('/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspots/seqldhot_hotspots/spot2kb_flank40kb.seqldhot_validate_hotspots.csv')
+d = pd.read_csv('/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspots/spot2kb_flank40kb.seqldhot_validate_hotspots.csv')
 spots = {}
 
-chrs = [    'chr1', 'chr1A', 'chr2', 'chr3', 'chr4', 'chr4A', \
-            'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10', \
-            'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chrZ']
+chrs = [ 'chr1' ]
  
 theta = 0.00675
-d = d[ d.zmatch_lk >= 10]
-for chr, start in zip(d.chr, d.zmatch_start):
+d = d[ d.zlk >= 10]
+d = d[ d.chr.isin(chrs) ]
+for chr, start in zip(d.chr, d.zstart):
 	if chr not in spots:
 		spots[chr] = []
 	spots[chr].append(start)
-
-# store all repeats into a dictionary
-repeats = {}
-f = open(repeat, 'r')
-for l in f:
-        if re.search('^\s+\d+', l):
-                d = re.split('\s+', l.rstrip())
-                if d[5] in chrs:
-                        if d[5] not in repeats:
-                                repeats[d[5]] = {}
-                        start = int(d[6])
-                        end = int(d[7]) + 1
-
-                        for pos in range(start, end):
-                                repeats[d[5]][pos] = 1
-f.close()
+for chr in spots:
+	print len(spots[chr])
 
 sh = open(command_sh, 'w')
 
@@ -54,28 +39,26 @@ for chr in spots:
 	rho_file = '%s%s.window10000.bpen100.rm.txt' % (rho_dir, chr)
 	rhos = pd.read_csv(rho_file)
 	
-	for i in range(1,samp+1):
-		haps = '/mnt/gluster/home/sonal.singhal1/%s/phasing/phasing_uncertainty/samples/%s.sample%s.haps' % (sp, chr, i)
+	for i in range(0,samp):
+		haps = '%s%s_haplotypes.%s.haps' % (hap_dir, chr, i)
 		
 		haplo = {}
 
 		f = open(haps, 'r')
 		for l in f:
 			d = re.split('\s+', l.rstrip())
-			# not a repeat
-			if int(d[2]) not in repeats[chr]:
-				count0 = d[5:].count('0')
-				count1 = d[5:].count('1')
-				# not a singleton
-				if count0 > 1 and count1 > 1:
-					for ix, base in enumerate(d[5:]):
-						if ix not in haplo:
-							haplo[ix] = {}
-						haplo[ix][int(d[2])] = base
+			count0 = d[5:].count('0')
+			count1 = d[5:].count('1')
+			# not a singleton
+			if count0 > 1 and count1 > 1:
+				for ix, base in enumerate(d[5:]):
+					if ix not in haplo:
+						haplo[ix] = {}
+					haplo[ix][int(d[2])] = base
 		f.close()
 
 		for start in spots[chr]:
-                	out = '%sputative_hotspot_%s_%s_%s.%s.seqLDhot.txt' % (results_dir, chr, start, i, sp)
+                	out = '%sputative_hotspot_%s_%s_%s.seqLDhot.txt' % (results_dir, chr, start, i)
 			out_in = out.replace('txt', 'in')
 
                 	if not os.path.isfile(out):
