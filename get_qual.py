@@ -20,16 +20,19 @@ parser.add_argument("--chr", help="chromosome for which to run analysis")
 args = parser.parse_args()
 chr = args.chr
 
-hot_file = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspots/seqldhot_hotspots/spot2kb_flank40kb.seqldhot_validate_hotspots.csv'
+hot_file = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspots/spot2kb_flank40kb.seqldhot_validate_hotspots.csv'
 d = pd.read_csv(hot_file)
-d = d[d.species == 'ZF']
-d = d[d.zmatch_lk > 10]
+d = d[d.zlk >= 10]
 d = d[d.chr == chr]
 
-hot = open('hot_%s.out' % chr, 'w')
-out = open('out_%s.out' % chr, 'w')
+out_dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspots/hotspot_checks/data_quality/snp_qual/'
+hot = open('%shot_%s.out' % (out_dir, chr), 'w')
+out = open('%sout_%s.out' % (out_dir, chr), 'w')
 
-vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/for_shapeit/gatk.ug.unrel_zf.%s.coverage.repeatmasked.filtered.recoded_biallelicSNPs.nomendel.vcf.gz' % (chr)
+vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/for_shapeit/gatk.ug.finch19.%s.allfilters.recoded_biallelicSNPs.nomissing.vcf.gz' % (chr)
+if chr == 'chrZ':
+	vcf = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/for_shapeit/gatk.ug.finch19.chrZ.allfilters.recodedsex.recoded_biallelicSNPs.vcf.gz'
+
 sites = {}
 f = gzip.open(vcf, 'r')
 for l in f:
@@ -55,7 +58,7 @@ for start in range(1, chr_lengths[chr], 50000):
 	if len(values) > 0:
 		out.write('%s\n' % np.mean(values))
 	
-for hot_start in d.spot_start:
+for hot_start in d.zstart:
 	start = hot_start - 25000
 	if start < 1:
 		start = 1

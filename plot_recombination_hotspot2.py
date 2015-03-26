@@ -1,7 +1,7 @@
 import re
 import glob
 
-sp = 'LTF'
+sp = 'ZF'
 dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspots/plots/'
 types = ['zf_type', 'shared_type', 'ltf_type']
 

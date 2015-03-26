@@ -3,7 +3,7 @@ import pandas as pd
 from itertools import izip
 import math
 
-sp = 'LTF'
+sp = 'ZF'
 
 chr_lengths = { 'chr10': 20806668, 'chr11': 21403021, 'chr12': 21576510, 'chr13': 16962381,
                 'chr14': 16419078, 'chr15': 14428146, 'chr16': 9909, 'chr17': 11648728,

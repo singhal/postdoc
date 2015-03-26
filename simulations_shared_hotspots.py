@@ -125,7 +125,7 @@ def main():
 	num_sim = 10
 	# hotspot / coldspot difference, > 1
 	# diffs_array = [[20]*12, [40]*12, [60]*12]
-	diffs_array = [[10]*12, [15]*12]
+	diffs_array = [[5]*12]
 	# hotspot length
 	hotspot_lengths = [2000]
 	# A, C, T, G

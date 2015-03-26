@@ -2,7 +2,7 @@ import glob
 import re
 import os
 
-dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspots/seqldhot_hotspots/'
+dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspots/hotspot_checks/phasing_uncertainty/'
 files = glob.glob(dir + '*txt')
 
 for file in files:

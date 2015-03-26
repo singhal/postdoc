@@ -102,13 +102,13 @@ def simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hot
 
 
 def main():
-	out_dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspot_simulations/theta_rho/'
+	out_dir = '/mnt/gluster/home/sonal.singhal1/simulations/hotspot_simulations/sim_thetarho/'
 	# sim MB
 	seq_size = 1000000
 	# num replicates to simulate
-	num_sim = 5
+	num_sim = 10
 	# hotspot / coldspot difference, > 1
-	diffs = [10, 10, 20, 20, 40, 40, 60, 60, 80, 80, 100, 100]
+	diffs = [10, 10, 10, 20, 20, 20, 40, 40, 40, 60, 60, 60]
 	# hotspot length
 	hotspot_lengths = [2000]
 	# hotspot_lengths = [1000]
@@ -129,7 +129,7 @@ def main():
 	for theta in thetas:
 		for rho_multiplier in rhos:
 			rho = theta * rho_multiplier
-			for ix in range(num_sim):
+			for ix in range(5, num_sim):
 				simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hotspot_lengths, ix)
 	
 

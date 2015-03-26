@@ -7,7 +7,7 @@ def find_hotspots(file, out, chr, block_size):
 	d = pd.read_csv(file, sep=" ", skiprows=3, header=None, 
 		names=['left_snp', 'right_snp', 'meanrho', 'p0.05', 'p0.95'])
 	o = open(out, 'w')
-	o.write('chr,window_start,window_end,rate\n')
+	o.write('chr,window_start,window_end,rho\n')
 
 	chr_lengths = { 'chr10': 20806668, 'chr11': 21403021, 'chr12': 21576510, 'chr13': 16962381,
                 'chr14': 16419078, 'chr15': 14428146, 'chr16': 9909, 'chr17': 11648728,
@@ -19,11 +19,11 @@ def find_hotspots(file, out, chr, block_size):
                 'chr7': 39844632, 'chr8': 27993427, 'chr9': 27241186, 'chrLG2': 109741,
                 'chrLG5': 16416, 'chrLGE22': 883365, 'chrZ': 72861351 }
 
-	chr_start = 0
+	chr_start = 1
 	chr_end = chr_lengths[chr]
 
 	for block_start in range(chr_start, chr_end, block_size):
-                block_end = block_start + block_size
+                block_end = block_start + block_size  - 1
                 if block_end > chr_end:
                         block_end = chr_end
 
@@ -62,7 +62,7 @@ def find_hotspots(file, out, chr, block_size):
 		block_rate = 'NA'
 
 		if chunk_rho['block']['bp'] > 0:
-                	block_rate = '%.5f' % (chunk_rho['block']['rho'] / chunk_rho['block']['bp'])
+                	block_rate = chunk_rho['block']['rho'] / chunk_rho['block']['bp']
 
                 o.write('%s,%s,%s,%s\n' % (chr, block_start, block_end, block_rate))
 	o.close()
@@ -80,8 +80,8 @@ def main():
 	sp = args.sp
 	
 	dir = '/mnt/gluster/home/sonal.singhal1/%s/analysis/LDhelmet/' % (sp)
-	out = '%smaps/%s.window%s.bpen100.rm.txt' % (dir, chr, block_size)
-	file = '%smaps/%s_recombination_bpen100.rm.txt' % (dir, chr)
+	out = '%smaps/%s.window%s.bpen100.txt' % (dir, chr, block_size)
+	file = '%smaps/%s_recombination_bpen100.txt' % (dir, chr)
 
 	find_hotspots(file, out, chr, block_size) 
 

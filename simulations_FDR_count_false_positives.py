@@ -4,6 +4,7 @@ import re
 
 files = glob.glob('/mnt/gluster/home/sonal.singhal1/simulations/FDR/maps/*hotspots*')
 counts = {}
+rho_lambda = 5
 
 for file in files:
 	d = pd.read_csv(file)
@@ -14,7 +15,7 @@ for file in files:
 		counts[rho] = {}
 	if switch not in counts[rho]:
 		counts[rho][switch] = {'Mb': 0, 'false_pos': 0}
-	counts[rho][switch]['false_pos'] += d[d.diffrate > 10].shape[0]
+	counts[rho][switch]['false_pos'] += d[d.diffrate >= rho_lambda].shape[0]
 	counts[rho][switch]['Mb'] += 1
 
 print 'rho,switch,false_pos/Mb'

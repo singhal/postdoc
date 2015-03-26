@@ -2,8 +2,8 @@ import glob
 import numpy
 import re
 
-files = glob.glob("/mnt/gluster/home/sonal.singhal1/ZF/analysis/TSS/chr*")
-out = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/TSS/summary_tss.csv'
+files = glob.glob("/mnt/gluster/home/sonal.singhal1/LTF/analysis/TSS/chr*")
+out = '/mnt/gluster/home/sonal.singhal1/LTF/analysis/TSS/summary_tss.csv'
 
 tss = {}
 for file in files:

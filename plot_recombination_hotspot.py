@@ -23,28 +23,29 @@ for type in types:
 # get hotspots in order
 d = pd.read_csv(hot_file)
 d = d[d.chr == chr]
-d = d.sort(['start'])
-# don't want hotspots that are too close to each other
-d['dist_diff'] = d.start.diff()
-d = d[d.dist_diff > 5000]
 
 d['spottype'] = ['NA'] * d.shape[0]
 d['shared_start'] = ['NA'] * d.shape[0]
 d['shared_length'] = ['NA'] * d.shape[0]
-d.ix[ (d.zmatch_lk >= 10), 'spottype'] = 'zf'
-d.ix[ (d.lmatch_lk >= 10), 'spottype'] = 'ltf'
-d.ix[ (d.zmatch_lk >= 10) & (d.lmatch_lk >= 10), 'spottype'] = 'shared'
+d.ix[ (d.zlk >= 10), 'spottype'] = 'zf'
+d.ix[ (d.llk >= 10), 'spottype'] = 'ltf'
+d.ix[ (d.zlk >= 10) & (d.llk >= 10), 'spottype'] = 'shared'
 if sp == 'ZF':
-	d.ix[ (d.spottype == 'shared') | (d.spottype == 'zf'), 'shared_start'] = d.zmatch_start
-	d.ix[ (d.spottype == 'shared') | (d.spottype == 'zf'), 'shared_length'] = d.zmatch_length
-	d.ix[ (d.spottype == 'ltf'), 'shared_start'] = d.lmatch_start
-	d.ix[ (d.spottype == 'ltf'), 'shared_length'] = d.lmatch_length
+	d.ix[ (d.spottype == 'shared') | (d.spottype == 'zf'), 'shared_start'] = d.zstart
+	d.ix[ (d.spottype == 'shared') | (d.spottype == 'zf'), 'shared_length'] = d.zlength
+	d.ix[ (d.spottype == 'ltf'), 'shared_start'] = d.lstart
+	d.ix[ (d.spottype == 'ltf'), 'shared_length'] = d.llength
 if sp == 'LTF':
-	d.ix[ (d.spottype == 'shared') | (d.spottype == 'ltf'), 'shared_start'] = d.lmatch_start
-        d.ix[ (d.spottype == 'shared') | (d.spottype == 'ltf'), 'shared_length'] = d.lmatch_length
-        d.ix[ (d.spottype == 'zf'), 'shared_start'] = d.zmatch_start
-        d.ix[ (d.spottype == 'zf'), 'shared_length'] = d.zmatch_length
+	d.ix[ (d.spottype == 'shared') | (d.spottype == 'ltf'), 'shared_start'] = d.lstart
+        d.ix[ (d.spottype == 'shared') | (d.spottype == 'ltf'), 'shared_length'] = d.llength
+        d.ix[ (d.spottype == 'zf'), 'shared_start'] = d.zstart
+        d.ix[ (d.spottype == 'zf'), 'shared_length'] = d.zlength
 d = d[d.spottype != 'NA']
+
+d = d.sort(['shared_start'])
+# don't want hotspots that are too close to each other
+d['dist_diff'] = d.shared_start.diff()
+d = d[d.dist_diff > 5000]
 
 rho = pd.read_csv(rho_file, sep=" ", skiprows=3, header=None,
 		names=['left_snp', 'right_snp', 'meanrho', 'p0.025', 'p0.975'])

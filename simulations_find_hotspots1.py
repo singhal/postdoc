@@ -71,12 +71,13 @@ def main():
 	block_size = 2000
 	flank_size = 40000
 
-	files = glob.glob('/mnt/gluster/home/sonal.singhal1/simulations/shared/*/maps/*txt')
-	files = filter(lambda x: not re.search('hotspot', x), files)
+	files = glob.glob('/mnt/gluster/home/sonal.singhal1/simulations/hotspot_simulations/sim_thetarho/maps/*txt')
+	files = filter(lambda x: not re.search('hotspots', x), files)
 	for file in files:
 		out = file.replace('.txt', '_hotspots_blocksize%s_flanksize%s.txt' % (block_size, flank_size))
-		if not os.path.isfile(out):
-			# print file
+		out1 = file.replace('.txt', '_hotspots.txt')
+		if not os.path.isfile(out) and not os.path.isfile(out1):
+			print file
 			find_hotspots(file, block_size, flank_size) 
 
 if __name__ == "__main__":

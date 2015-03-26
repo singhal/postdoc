@@ -5,7 +5,7 @@ import numpy as np
 from scipy.stats.stats import pearsonr
 
 block = 2000
-max_dist = 2500
+max_dist = 3000
 heat = 10
 zf_maps = glob.glob('/mnt/gluster/home/sonal.singhal1/simulations/shared/ZF/maps/*hotspot*')
 
@@ -37,7 +37,7 @@ def get_hotspots(map):
 	
 	return hotspots
 
-print 'background_rho,hotspot_lambda,sim_num,num_ZF_spots,num_LTF_spots,num_matched,corr_heats,corr_back_rhos'
+print 'background_rho,hotspot_lambda,sim_num,num_ZF_spots,num_LTF_spots,avg_dist,num_matched,corr_heats,corr_back_rhos'
 for zf_map in zf_maps:
 	rho = float(re.search('rho([0-9|\.]+)', zf_map).group(1))
 	hot_heat = int(re.search('diff(\d+)', zf_map).group(1))
@@ -51,6 +51,7 @@ for zf_map in zf_maps:
 	match = 0
 	heats = {'ZF': [], 'LTF': []}
 	rhos = {'ZF': [], 'LTF': []}
+	starts = {'ZF': [], 'LTF': []}
 	for start in zf_hot:
 		if len(ltf_hot) > 0:
 			nearest_matches = [abs(x - start) for x in sorted(ltf_hot.keys())]
@@ -61,10 +62,13 @@ for zf_map in zf_maps:
 				heats['LTF'].append(ltf_hot[ltf_match]['lambda_heat'])
 				rhos['ZF'].append(zf_hot[start]['flank_rate'])
 				rhos['LTF'].append(ltf_hot[ltf_match]['flank_rate'])
+				starts['ZF'].append(start)
+				starts['LTF'].append(ltf_match)
 
 	if len(ltf_hot) > 0:
-		print '%s,%s,%s,%s,%s,%s,%.3f,%.3f' % (	rho, hot_heat, sim_num, len(zf_hot), len(ltf_hot), match, 
+		avg_dist = np.mean([abs(x - y) for x, y in zip(starts['ZF'], starts['LTF'])])
+		print '%s,%s,%s,%s,%s,%.0f,%s,%.3f,%.3f' % (	rho, hot_heat, sim_num, len(zf_hot), len(ltf_hot), avg_dist, match, 
 							pearsonr(heats['ZF'], heats['LTF'])[0],
 							pearsonr(rhos['ZF'], rhos['LTF'])[0] )
 	else:
-		print '%s,%s,%s,%s,0,0,NA,NA' % (rho, hot_heat, sim_num, len(zf_hot))
+		print '%s,%s,%s,%s,0,NA,0,NA,NA' % (rho, hot_heat, sim_num, len(zf_hot))

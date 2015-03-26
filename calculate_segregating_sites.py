@@ -13,9 +13,9 @@ sp = args.sp
 min_allele = int(args.min_allele)
 
 if sp == 'ZF':
-	vcfs = glob.glob('/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/all_vcf/for_shapeit/*finch19*miss*')
+	vcfs = glob.glob('/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/*phased*')
 if sp == 'LTF':
-	vcfs = glob.glob('/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/for_shapeit/*ltf*')
+	vcfs = glob.glob('/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/*phased*')
 out = '/mnt/gluster/home/sonal.singhal1/%s/analysis/segregatingsites_af%s.txt' % (sp, min_allele)
 
 o = open(out, 'w')
@@ -31,13 +31,15 @@ for vcf in vcfs:
 				if len(allele) > 1:
 					indel = True
 			if not indel:
-				allele_counts = dict()
-				for i, allele in enumerate(alleles):
-					count = len(re.findall(str(i) + "/", line)) + len(re.findall("/" + str(i), line))
-					if count > min_allele:
-						allele_counts[i] = count		
-
-				if len(allele_counts) == 2:
+				genos = []
+				for geno in d[9:]:
+					geno = re.search('^([^:]+)', geno).group(1)
+                                        genos += re.split('[|/]', geno)
+                                num_alleles = 0
+                                for ix, allele in enumerate(alleles):
+                                        if genos.count(str(ix)) > min_allele:
+                                                num_alleles += 1
+				if num_alleles > 1:
 					seg_sites += 1
 	o.write("%s\t%s\n" % (vcf, seg_sites))
 	infile.close()

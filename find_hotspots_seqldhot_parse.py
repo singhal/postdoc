@@ -74,19 +74,19 @@ def parse_file(file, start, lr_cutoff, center):
 		match_start = start + (spot[0] - 25000)
 		match_length = spot[1] - spot[0]
 					
-	return (match_lk, match_heat, match_start, match_length)
+	return (match_lk, match_heat, match_start, match_length, back_rho / 1000.)
 
 
 def run_script(file, sp, chr, start, lr_cutoff, center, spots):
 	try:
 		if os.stat(file).st_size > 0:
-                        match_lk, match_heat, match_start, match_length = parse_file(file, start, lr_cutoff, center)
+                        match_lk, match_heat, match_start, match_length, match_back_rho = parse_file(file, start, lr_cutoff, center)
 	
 			if chr not in spots[sp]:
 		                spots[sp][chr] = {}
 
 			if match_lk != 'NA':
-        			spots[sp][chr][match_start] = {'lk': match_lk, 'heat': match_heat, 'length': match_length}
+        			spots[sp][chr][match_start] = {'lk': match_lk, 'heat': match_heat, 'length': match_length, 'flank_rho': match_back_rho}
         except:
 		pass
 
@@ -107,7 +107,7 @@ for out_zf in files:
 
 
 o = open(out, 'w')
-o.write('chr,zstart,zlength,zheat,zlk,lstart,llength,lheat,llk\n')
+o.write('chr,zstart,zlength,zbackrho,zheat,zlk,lstart,llength,lbackrho,lheat,llk\n')
 
 for chr in chrs:
 	# zf first, and then ltf
@@ -155,14 +155,20 @@ for chr in chrs:
 	for zstart in spots['ZF'][chr]:
 		if zstart in matches:
 			lstart = matches[zstart]
-			o.write('%s,%s,%s,%s,%s,%s,%s,%s,%s\n' % (chr, zstart, spots['ZF'][chr][zstart]['length'], spots['ZF'][chr][zstart]['heat'],
+			o.write('%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n' % (chr, zstart, spots['ZF'][chr][zstart]['length'], 
+								spots['ZF'][chr][zstart]['flank_rho'], 
+								spots['ZF'][chr][zstart]['heat'],
 								spots['ZF'][chr][zstart]['lk'], lstart, spots['LTF'][chr][lstart]['length'], 
+								spots['LTF'][chr][lstart]['flank_rho'],
 								spots['LTF'][chr][lstart]['heat'], spots['LTF'][chr][lstart]['lk']))
 		else:
-			o.write('%s,%s,%s,%s,%s,NA,NA,NA,NA\n' % (chr, zstart, spots['ZF'][chr][zstart]['length'], spots['ZF'][chr][zstart]['heat'],
+			o.write('%s,%s,%s,%s,%s,%s,NA,NA,NA,NA,NA\n' % (chr, zstart, spots['ZF'][chr][zstart]['length'], 
+								spots['ZF'][chr][zstart]['flank_rho'],
+								spots['ZF'][chr][zstart]['heat'],
                                                                 spots['ZF'][chr][zstart]['lk']))
 	
 	for lstart in spots['LTF'][chr]:
 		if lstart not in rev_matches:
-			o.write('%s,NA,NA,NA,NA,%s,%s,%s,%s\n' % (chr, lstart, spots['LTF'][chr][lstart]['length'],
+			o.write('%s,NA,NA,NA,NA,NA,%s,%s,%s,%s,%s\n' % (chr, lstart, spots['LTF'][chr][lstart]['length'],
+									spots['LTF'][chr][lstart]['flank_rho'],
                                                                 spots['LTF'][chr][lstart]['heat'], spots['LTF'][chr][lstart]['lk']))

@@ -124,7 +124,7 @@ def main():
 	# sim MB
 	seq_size = 1000000
 	# num replicates to simulate
-	num_sim = 4
+	num_sim = 12
 	# mean rho values
 	rhos = [0.001, 0.01, 0.1, 0.5]
 	# switch error rate
@@ -144,8 +144,8 @@ def main():
 
 	for rho in rhos:
 		for switch in switches:
-			for ix in range(num_sim):
-				haplo_file = '%shaplotypes/haplo_rho%s_switch%s_%s.fa' % (out_dir, rho, switch, ix)
+			for ix in range(4, num_sim):
+				haplo_file = '%shaplo/haplo_rho%s_switch%s_%s.fa' % (out_dir, rho, switch, ix)
 				if not os.path.isfile(haplo_file):
 					simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, switch, ix)
 	

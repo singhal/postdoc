@@ -11,8 +11,8 @@ chr = args.chr
 
 gff = '/mnt/gluster/home/sonal.singhal1/reference/Taeniopygia_guttata.gff'
 # long autosomal chromosomes
-file = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/LDhelmet/without_fam/maps/%s_recombination_bpen100.rm.txt' % chr
-out = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/TSS/%s.recombination_tss.csv' % chr
+file = '/mnt/gluster/home/sonal.singhal1/LTF/analysis/LDhelmet/maps/%s_recombination_bpen100.txt' % chr
+out = '/mnt/gluster/home/sonal.singhal1/LTF/analysis/TSS/%s.recombination_tss.csv' % chr
 o = open(out, 'w') 
 o.write('chr,position,distance_to_TSS,rho\n')
 
