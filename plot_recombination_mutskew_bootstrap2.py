@@ -27,5 +27,5 @@ for loc in values:
 		min = np.min(values[loc][type])
 		max = np.max(values[loc][type])
 		p025, p975 = np.percentile(values[loc][type], [2.5, 97.5])
-	
+
 		o.write('%s,%s,%s,%s,%s,%s,%s\n' % (loc, type, mean, min, max, p025, p975))

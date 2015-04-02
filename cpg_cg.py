@@ -10,10 +10,10 @@ chr_lengths = { 'chr10': 20806668, 'chr11': 21403021, 'chr12': 21576510, 'chr13'
                 'chr27': 4618897, 'chr28': 4963201, 'chr2': 156412533, 'chr3': 112617285,
                 'chr4A': 20704505, 'chr4': 69780378, 'chr5': 62374962, 'chr6': 36305782,
                 'chr7': 39844632, 'chr8': 27993427, 'chr9': 27241186, 'chrLG2': 109741,
-                'chrLG5': 16416, 'chrLGE22': 883365, 'chrZ': 72861351}
-window = 50000
-genome = '/mnt/gluster/home/sonal.singhal1/reference/Zfinch.fa'
-out = '/mnt/gluster/home/sonal.singhal1/reference/cpg_cg.csv'
+                'chrLG5': 16416, 'chrLGE22': 883365, 'chrZ': 72861351, 'chrZ_random': 500000}
+window = 100000
+genome = '/mnt/gluster/home/sonal.singhal1/reference/ancestral_genome.fa'
+out = '/mnt/gluster/home/sonal.singhal1/reference/ancestral.cpg_cg.csv'
 o = open(out, 'w')
 o.write('chr,ix,start,end,num_sites,cpg,gc\n')
 
@@ -27,14 +27,13 @@ for chr, length in chr_lengths.items():
              	seq = ''
                 for l in seq_call.stdout:
                         if not re.match('>', l):
-				seq += l.lstrip().upper()
-			
-
-                num_cg = len(re.findall('CG', seq)) * 2
-		num_sites = len(seq) - seq.count('N')
+				seq += l.rstrip().upper()
+		
 		cpg = 'NA'
-		if num_sites > 0:
-			cpg = num_cg / float(num_sites)
+		tuples = [seq[i:i+2] for i in range(0, len(seq), 2)] + [seq[i:i+2] for i in range(1, len(seq), 2)]
+		tuples = [x for x in tuples if not re.search('N', x)]
+		if len(tuples) > 0:
+			cpg = tuples.count('CG') / float(len(tuples))
 
 		seq = list(seq)
 		counts = {}
@@ -44,5 +43,5 @@ for chr, length in chr_lengths.items():
 		if np.sum(counts.values()) > 0:
 			gc = (counts['C'] + counts['G']) / float( np.sum(counts.values()) )
 
-		o.write('%s,%s,%s,%s,%s,%s,%s\n' % (chr, ix, start, end, num_sites, cpg, gc))
+		o.write('%s,%s,%s,%s,%s,%s,%s\n' % (chr, ix, start, end, np.sum(counts.values()), cpg, gc))
 o.close()

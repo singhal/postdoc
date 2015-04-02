@@ -1,9 +1,15 @@
 import glob
 import numpy
 import re
+import argparse
 
-files = glob.glob("/mnt/gluster/home/sonal.singhal1/ZF/analysis/cpg/chr*")
-out = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/cpg/summary_cpg.csv'
+parser = argparse.ArgumentParser()
+parser.add_argument("--sp", help="species for which to run analysis")
+args = parser.parse_args()
+sp = args.sp
+
+files = glob.glob("/mnt/gluster/home/sonal.singhal1/%s/analysis/TSS/chr*" % sp)
+out = '/mnt/gluster/home/sonal.singhal1/%s/analysis/TSS/cpg/summary_cpg.csv' % sp
 
 cpg = {}
 for file in files:
@@ -12,19 +18,23 @@ for file in files:
 	for l in f:
 		d = re.split(',', l.rstrip())
 
-		d[2] = int(d[2])
-		d[3] = float(d[3])
+		dist = int(d[2])
+		cpg_bin = d[3]
+		rho = float(d[4])
 
-		if abs(d[2]) <= 1e6:
-			if d[2] not in cpg:
-				cpg[d[2]] = {'rho': 0, 'num': 0}
-			cpg[d[2]]['rho'] += d[3]
-			cpg[d[2]]['num'] += 1
+		if abs(dist) <= 1e5:
+			if dist not in cpg:
+				cpg[dist] = {}
+			if cpg_bin not in cpg[dist]:
+				cpg[dist][cpg_bin] = {'rho': 0, 'num': 0}
+			cpg[dist][cpg_bin]['rho'] += rho
+			cpg[dist][cpg_bin]['num'] += 1
 	f.close()
 
 o = open(out, 'w')
-o.write('location,average_rho,number_pos\n')
+o.write('location,cpg_bin,average_rho,number_pos\n')
 for pos in cpg:
-	o.write('%s,%s,%s\n' % (pos, cpg[pos]['rho'] / float(cpg[pos]['num']), cpg[pos]['num']))
+	for cpg_bin in cpg[pos]:
+		o.write('%s,%s,%s,%s\n' % (pos, cpg_bin, cpg[pos][cpg_bin]['rho'] / float(cpg[pos][cpg_bin]['num']), cpg[pos][cpg_bin]['num']))
 o.close()
 	
