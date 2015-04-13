@@ -27,6 +27,7 @@ for file in files:
 				cpg[dist] = {}
 			if cpg_bin not in cpg[dist]:
 				cpg[dist][cpg_bin] = {'rho': 0, 'num': 0}
+			print cpg_bin
 			cpg[dist][cpg_bin]['rho'] += rho
 			cpg[dist][cpg_bin]['num'] += 1
 	f.close()

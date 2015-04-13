@@ -102,11 +102,11 @@ def get_divergence(start, end, hap1, nind1, hap2, nind2, keep_sites):
 		if site in hap1:
 			geno1 = hap1[site]
 		else:
-			geno1 = 'N'
+			geno1 = keep_sites[site]
 		if site in hap2:
 			geno2 = hap2[site]
 		else:
-			geno2 = 'N'
+			geno2 = keep_sites[site]
 
 		for i in geno1:
 			for j in geno2:

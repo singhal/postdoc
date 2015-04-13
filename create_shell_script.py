@@ -6,14 +6,19 @@ chrs = [ 'chr1', 'chr1A', 'chr1B', 'chr2', 'chr3',  'chr4', 'chr4A', 'chr5', 'ch
          'chrLG2', 'chrLG5', 'chrLGE22', 'chrZ']
 
 long_chrs = [ 'chr1', 'chr1A', 'chr2', 'chr3',  'chr4', 'chr4A', 'chr5', 'chr6', 'chr7', 'chr8',
-         'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chrZ']
+         'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15']
 
-i = 0
-species = [('ZF', 'LTF'), ('LTFa', 'LTFh')]
-for chr in chrs:
-	for (sp1, sp2) in species:
-		print "echo \'python calculate_divergence_bysnp.py --sp1 %s --sp2 %s --chr %s\' | qsub -l h_vmem=2g -cwd -V -j y -N snp%s" % (sp1, sp2, chr, i)
-		i += 1
+for chr in long_chrs:
+	for sp in ['ZF', 'LTF']:
+		print "echo \'python plot_recombination_cpg.py --sp %s --chr %s\' | qsub -l h_vmem=5g -cwd -V -j y -N %s_%s" % (sp, chr, sp, chr)
+
+
+#i = 0
+#species = [('ZF', 'LTF'), ('LTFa', 'LTFh')]
+#for chr in chrs:
+#	for (sp1, sp2) in species:
+#		print "echo \'python calculate_divergence_bysnp.py --sp1 %s --sp2 %s --chr %s\' | qsub -l h_vmem=2g -cwd -V -j y -N snp%s" % (sp1, sp2, chr, i)
+#		i += 1
 
 # ix = 0
 # for chr in chrs:

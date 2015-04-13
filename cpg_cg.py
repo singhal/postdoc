@@ -11,9 +11,9 @@ chr_lengths = { 'chr10': 20806668, 'chr11': 21403021, 'chr12': 21576510, 'chr13'
                 'chr4A': 20704505, 'chr4': 69780378, 'chr5': 62374962, 'chr6': 36305782,
                 'chr7': 39844632, 'chr8': 27993427, 'chr9': 27241186, 'chrLG2': 109741,
                 'chrLG5': 16416, 'chrLGE22': 883365, 'chrZ': 72861351, 'chrZ_random': 500000}
-window = 100000
-genome = '/mnt/gluster/home/sonal.singhal1/reference/ancestral_genome.fa'
-out = '/mnt/gluster/home/sonal.singhal1/reference/ancestral.cpg_cg.csv'
+window = 50000
+genome = '/mnt/gluster/home/sonal.singhal1/reference/Zfinch.fa'
+out = '/mnt/gluster/home/sonal.singhal1/reference/reference.cpg_cg.csv'
 o = open(out, 'w')
 o.write('chr,ix,start,end,num_sites,cpg,gc\n')
 
@@ -33,7 +33,7 @@ for chr, length in chr_lengths.items():
 		tuples = [seq[i:i+2] for i in range(0, len(seq), 2)] + [seq[i:i+2] for i in range(1, len(seq), 2)]
 		tuples = [x for x in tuples if not re.search('N', x)]
 		if len(tuples) > 0:
-			cpg = tuples.count('CG') / float(len(tuples))
+			cpg = (tuples.count('CG') * 2) / float(len(tuples))
 
 		seq = list(seq)
 		counts = {}

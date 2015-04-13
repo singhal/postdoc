@@ -1,72 +1,107 @@
-import re
 import pandas as pd
-from itertools import izip
+import re
 import numpy as np
+from itertools import izip
 import argparse
-
-# add tail end
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--chr", help="chromosome for which to run analysis")
+parser.add_argument("--sp", help="species for which to run analysis")
 args = parser.parse_args()
 chr = args.chr
+sp = args.sp
 
+gff = '/mnt/gluster/home/sonal.singhal1/reference/Taeniopygia_guttata.gff'
+# cpg islands
 cpg_file = '/mnt/gluster/home/sonal.singhal1/reference/cpgIslandExt.txt'
-rho_file = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/LDhelmet/without_fam/maps/%s_recombination_bpen100.rm.txt' % chr
-out = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/cpg/%s.cpg_recombination.csv' % chr
-o = open(out, 'w')
-o.write('chr,position,distance,rho\n')
+# long autosomal chromosomes
+file = '/mnt/gluster/home/sonal.singhal1/%s/analysis/LDhelmet/maps/%s_recombination_bpen100.txt' % (sp, chr)
+out = '/mnt/gluster/home/sonal.singhal1/%s/analysis/TSS/%s.recombination_tss_cpg.csv' % (sp, chr)
+o = open(out, 'w') 
 
-cpg = []
+###############
+
+cpg_starts = []
 f = open(cpg_file, 'r')
 for l in f:
-	d = re.split('\s+', l.rstrip())
-	if d[1] == chr:
-		cpg_length = int(d[3]) - int(d[2])
-		# getting rid of very short cpgs
-		if cpg_length >= 300:
-			cpg.append([int(d[2]), int(d[3])])
+        d = re.split('\s+', l.rstrip())
+        if chr == d[1]:
+        	center = int((int(d[3]) + int(d[2])) / 2.0)
+        	cpg_starts.append(center)
 f.close()
+cpg_starts = sorted(cpg_starts)
 
+
+# CpG bins
+bins = [-10000, -1000, 0, 1000, 10000]
+
+bin_vals = {}
+for ix, (i, j) in enumerate(zip(bins, bins[1:])):
+        bin_vals[ix+1] = '%s_%s' % (i,j)
+bin_vals[0] = '<%s' % bins[0]
+bin_vals[len(bins)] = '>%s' % bins[-1]
+
+
+d = pd.read_csv(gff, sep='\t', header=0, names=['chr', 'type', 'cds_mrna', 
+						'start', 'stop', 'score', 
+						'orientation', 'codon_pos', 'id'])
+chr_short = chr.replace('chr','')
+d = d[d.chr == chr_short]
+gdata = d[ d.cds_mrna == 'mRNA' ].set_index('id').to_dict()
+genes = d[ d.cds_mrna == 'mRNA' ].id.unique()
+
+tss = {}
+for gene in genes:
+	orientation = 1
+	if gdata['orientation'][gene] == '+':
+		tss_start = gdata['start'][gene]
+	elif gdata['orientation'][gene]  == '-':
+		tss_start = gdata['stop'][gene]
+		orientation = -1
+	
+	dists = [x-tss_start for x in cpg_starts]
+        abs_dists = [abs(x) for x in dists]
+        min_cpg_dist = dists[abs_dists.index(np.min(abs_dists))]
+
+        cpg_bin = np.digitize([min_cpg_dist], bins)[0]
+        cpg_bin = bin_vals[cpg_bin]
+
+	tss[ tss_start ]  = {'orientation': orientation, 'cpg_dist' : cpg_bin}
+tss_starts = sorted(tss.keys())
+
+d = pd.read_csv(file, sep=" ", skiprows=3, header=None, 
+	names=['left_snp', 'right_snp', 'meanrho', 'p0.025', 'p0.975'])
 rhos = {}
-d = pd.read_csv(rho_file, sep=" ", skiprows=3, header=None,
-		names=['left_snp', 'right_snp', 'meanrho', 'p0.025', 'p0.975'])
 for start, rho in izip(d.left_snp, d.meanrho):
-	rhos[start] = rho
+        rhos[start] = rho
 max_length = np.max(d.right_snp)
 d = ''
-starts = sorted(rhos.keys())
+rho_starts = sorted(rhos.keys())
 
-def interval_dist(value, start, end):
-	middle = int((end - start) / 2.0) + start
-	for i in range(start, middle):
-		dist = i - start
-		if (value + 1) < len(starts):
-			if i >= starts[value + 1]:
-                		value += 1
-        	o.write('%s,%s,%s,%s\n' % (chr, i, dist, rhos[starts[value]]))
-	for i in range(middle, end):
-		dist = i - end
-		if (value + 1) < len(starts):
-			if i >= starts[value + 1]:
-                		value += 1
-        	o.write('%s,%s,%s,%s\n' % (chr, i, dist, rhos[starts[value]]))
-	return value
+tss_value = 0
+cpg_value = 0
+rho_value = 0
 
-value = 0
-for i in range(starts[0], cpg[0][0]):
-	dist = i - cpg[0][0]
-	if i >= starts[value + 1]:
-		value += 1
-	o.write('%s,%s,%s,%s\n' % (chr, i, dist, rhos[starts[value]]))
-for (start1, end1), (start2, end2) in zip(cpg, cpg[1:]):
-	value = interval_dist(value, start1, end1)
-	value = interval_dist(value, end1, start2)
-value = interval_dist(value,cpg[-1][0],cpg[-1][1])
-for i in range(cpg[-1][1], max_length):
-	dist = i - cpg[-1][1]
-	if (value + 1) < len(starts):
-	        if i >= starts[value + 1]:
-        	        value += 1
-        o.write('%s,%s,%s,%s\n' % (chr, i, dist, rhos[starts[value]]))
+o.write('chr,position,rho,TSS_dist,CpG_dist,CpG_dist_TSS\n')
+for bp in range(rho_starts[0], max_length):
+	if (rho_value + 1) < len(rho_starts):
+		if bp > rho_starts[rho_value + 1]:
+			rho_value += 1
+	if (cpg_value + 1) < len(cpg_starts):
+		# switch to next island because the position is greater than the midpoint between
+		#	two adjacent islands
+		if bp > int(0.5 * (cpg_starts[cpg_value] + cpg_starts[cpg_value + 1])):
+			cpg_value += 1
+	if (tss_value + 1) < len(tss_starts):
+		# switch to the next TSS because the pos is greater than the midpoint between
+		#	two adjacent tss
+		if bp > int(0.5 * (tss_starts[tss_value] + tss_starts[tss_value + 1])):
+        	        tss_value += 1
+
+	rho_val = rhos[rho_starts[rho_value]]
+	tss_dist = (bp - tss_starts[tss_value]) * tss[tss_starts[tss_value]]['orientation']
+	cpg_dist = abs(bp - cpg_starts[cpg_value]) 
+	tss_cpg = tss[tss_starts[tss_value]]['cpg_dist']
+
+	o.write('%s,%s,%s,%s,%s,%s\n' % (chr, bp, rho_val, tss_dist, cpg_dist, tss_cpg))
 o.close()

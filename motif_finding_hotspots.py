@@ -7,17 +7,28 @@ import pickle
 import copy
 
 
-def get_hotspots(hotspot_file):
+def get_hotspots(hotspot_file, sp):
 	hot = pd.read_csv(hotspot_file)
-        hot = hot[hot.zlk >= 10]
+	if sp == 'ZF':
+        	hot = hot[hot.zlk >= 10]
 
-	hotspots = {}
+		hotspots = {}
 
-	for chr, start, length in izip(hot.chr, hot.zstart, hot.zlength):
-		if chr not in hotspots:
-			hotspots[chr] = {}
-		midpoint = start + int(length / 2.0)
-		hotspots[chr][midpoint] = {'GC': None, 'CpG': None, 'match': None, 'length': length}
+		for chr, start, length in izip(hot.chr, hot.zstart, hot.zlength):
+			if chr not in hotspots:
+				hotspots[chr] = {}
+			midpoint = start + int(length / 2.0)
+			hotspots[chr][midpoint] = {'GC': None, 'CpG': None, 'match': None, 'length': length}
+	else:
+		hot = hot[hot.llk >= 10]        
+
+                hotspots = {}
+
+                for chr, start, length in izip(hot.chr, hot.lstart, hot.llength):
+                        if chr not in hotspots:
+                                hotspots[chr] = {}
+                        midpoint = start + int(length / 2.0)
+                        hotspots[chr][midpoint] = {'GC': None, 'CpG': None, 'match': None, 'length': length}
 
 	return hotspots
 
@@ -49,7 +60,7 @@ def get_cg_data(genome, spots):
 			tuples = [seq[i:i+2] for i in range(0, len(seq), 2)] + [seq[i:i+2] for i in range(1, len(seq), 2)]
 			tuples = [x for x in tuples if not re.search('N', x)]
 			if len(tuples) > 0:
-				spots[chr][center]['CpG'] = tuples.count('CG') / float(len(tuples))
+				spots[chr][center]['CpG'] = (tuples.count('CG') * 2) / float(len(tuples))
 
 			seq = list(seq)	
 			counts = {}
@@ -127,8 +138,8 @@ def test_seq(genome, spots, type, kmers):
 	for chr in spots:
 		for center in spots[chr]:
 			if spots[chr][center]['match']:
-				start = center - 1500
-                        	end = center + 1500
+				start = center - 500
+                        	end = center + 500
 
                         	seq = ''
                         	out = subprocess.Popen('samtools faidx %s %s:%s-%s' % (genome, chr, start, end), shell=True, stdout=subprocess.PIPE)
@@ -159,38 +170,38 @@ def main():
 	gc_limit = 0.005
 	kmer_min = 3
 	kmer_max = 10
+	sp = 'LTF'
 
 	# first match hotspots and coldspots
 	# get the hotspots
 	hotspot_file = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspots/spot2kb_flank40kb.seqldhot_validate_hotspots.csv'
-	hot = get_hotspots(hotspot_file)
+	hot = get_hotspots(hotspot_file, sp)
 	# get the coldspots
-	coldspot_file = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspots/ZF.ldhelmet_unvalidated_coldspots.csv'
+	coldspot_file = '/mnt/gluster/home/sonal.singhal1/%s/analysis/hotspots/%s.ldhelmet_unvalidated_coldspots.csv' % (sp, sp)
 	cold = get_coldspots(coldspot_file)
 	# then get cpg / CG data
 	hot = get_cg_data(genome, hot)
 	cold = get_cg_data(genome, cold)
-
-	pickle.dump(hot, open('%shotspots.pickle' % out_dir, 'w'))
-	pickle.dump(cold, open('%scoldspots.pickle' % out_dir, 'w'))
-	
-	# hot = pickle.load(open('hotspots.pickle', 'r'))
-	# cold = pickle.load(open('coldspots.pickle', 'r'))
-	
-	# hot, cold = match_hotspots(hot, cold, cpg_limit, gc_limit)	
-	# pickle.dump(hot, open('hotspots.pickle', 'w'))
-        # pickle.dump(cold, open('coldspots.pickle', 'w'))
+		
+	hot, cold = match_hotspots(hot, cold, cpg_limit, gc_limit)	
+	pickle.dump(hot, open('%s%shotspots.pickle' % (out_dir, sp), 'w'))
+        pickle.dump(cold, open('%s%scoldspots.pickle' % (out_dir, sp), 'w'))
 
 	# then generate kmer hash -- make it hash[ kmer ] = {'cold': #, 'hot': #}
-	# kmers = get_kmers(kmer_min, kmer_max)
+	kmers = get_kmers(kmer_min, kmer_max)
 	
 	# then test each hotspot and coldspot
-	# kmers = test_seq(genome, hot, 'hot', kmers)
-	# kmers = test_seq(genome, cold, 'cold', kmers)
+	kmers = test_seq(genome, hot, 'hot', kmers)
+	kmers = test_seq(genome, cold, 'cold', kmers)
 
 	# then print out results
-	# for kmer in kmers:
-	#	print '%s,%s,%s' % (kmer, kmers[kmer]['hot'], kmers[kmer]['cold'])
+	
+	out = '%s%s.motifs.csv' % (out_dir, sp)
+	o = open(out, 'w')
+	o.write('kmer,hot_matches,cold_matches\n')
+	for kmer in kmers:
+		o.write('%s,%s,%s\n' % (kmer, kmers[kmer]['hot'], kmers[kmer]['cold']))
+	o.close()
 
 if __name__ == "__main__":
     main()

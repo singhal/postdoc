@@ -31,7 +31,8 @@ for l in f:
         	cpg.append(center)
 f.close()
 
-bins = [0, 100, 500, 1000, 5000, 10000, 20000]
+bins = [-10000, -1000, 0, 1000, 10000]
+
 bin_vals = {}
 for ix, (i, j) in enumerate(zip(bins, bins[1:])):
 	bin_vals[ix+1] = '%s_%s' % (i,j)
@@ -54,9 +55,14 @@ for gene in genes:
 	elif gdata['orientation'][gene]  == '-':
 		tss_start = gdata['stop'][gene]
 		orientation = -1
-	min_cpg_dist = np.min([abs(x-tss_start) for x in cpg])
+
+	dists = [x-tss_start for x in cpg]
+	abs_dists = [abs(x) for x in dists]
+	min_cpg_dist = dists[abs_dists.index(np.min(abs_dists))]
+
 	cpg_bin = np.digitize([min_cpg_dist], bins)[0]
 	cpg_bin = bin_vals[cpg_bin]
+	print cpg_bin
 	tss[ tss_start ]  = {'orientation': orientation, 'cpg_dist' : cpg_bin}
 tss_starts = sorted(tss.keys())
 

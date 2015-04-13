@@ -6,7 +6,7 @@ from scipy.stats.stats import pearsonr
 
 block = 2000
 max_dist = 3000
-heat = 10
+heat = 5
 zf_maps = glob.glob('/mnt/gluster/home/sonal.singhal1/simulations/shared/ZF/maps/*hotspot*')
 
 def get_hotspots(map):
@@ -37,7 +37,9 @@ def get_hotspots(map):
 	
 	return hotspots
 
-print 'background_rho,hotspot_lambda,sim_num,num_ZF_spots,num_LTF_spots,avg_dist,num_matched,corr_heats,corr_back_rhos'
+expected_starts = [int(x) for x in np.linspace(0+50e3,1e6-50e3,12)]
+
+print 'background_rho,hotspot_lambda,sim_num,num_ZF_spots,num_LTF_spots,avg_dist,num_matched,corr_heats,corr_back_rhos,spurious_match'
 for zf_map in zf_maps:
 	rho = float(re.search('rho([0-9|\.]+)', zf_map).group(1))
 	hot_heat = int(re.search('diff(\d+)', zf_map).group(1))
@@ -47,7 +49,9 @@ for zf_map in zf_maps:
 
 	zf_hot = get_hotspots(zf_map)
 	ltf_hot = get_hotspots(ltf_map)
-	
+
+	spurious_match = 0	
+
 	match = 0
 	heats = {'ZF': [], 'LTF': []}
 	rhos = {'ZF': [], 'LTF': []}
@@ -65,10 +69,13 @@ for zf_map in zf_maps:
 				starts['ZF'].append(start)
 				starts['LTF'].append(ltf_match)
 
+				if np.min([abs(start - x) for x in expected_starts]) > 2000:
+					spurious_match += 1
+
 	if len(ltf_hot) > 0:
 		avg_dist = np.mean([abs(x - y) for x, y in zip(starts['ZF'], starts['LTF'])])
-		print '%s,%s,%s,%s,%s,%.0f,%s,%.3f,%.3f' % (	rho, hot_heat, sim_num, len(zf_hot), len(ltf_hot), avg_dist, match, 
+		print '%s,%s,%s,%s,%s,%.0f,%s,%.3f,%.3f,%s' % (	rho, hot_heat, sim_num, len(zf_hot), len(ltf_hot), avg_dist, match, 
 							pearsonr(heats['ZF'], heats['LTF'])[0],
-							pearsonr(rhos['ZF'], rhos['LTF'])[0] )
+							pearsonr(rhos['ZF'], rhos['LTF'])[0], spurious_match )
 	else:
-		print '%s,%s,%s,%s,0,NA,0,NA,NA' % (rho, hot_heat, sim_num, len(zf_hot))
+		print '%s,%s,%s,%s,0,NA,0,NA,NA,NA' % (rho, hot_heat, sim_num, len(zf_hot))

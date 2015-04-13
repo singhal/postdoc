@@ -51,7 +51,8 @@ def get_sequence(genome, chr, start, end):
 
 def get_counts(seq):
 	ancAT = seq.count('A') + seq.count('T')
-	ancGC = seq.count('G') + seq.count('C')
+	# because we are getting rid of any sites that are CG
+	ancGC = seq.count('G') + seq.count('C') - len(re.findall('CG', ''.join(seq))) * 2
 
 	return (ancAT, ancGC)
 
@@ -67,9 +68,15 @@ def get_transitions(start, end, var1, var2, var3, aa_seq, ref_seq):
 
         for ix, (a_bp, r_bp) in enumerate(zip(aa_seq, ref_seq)):
                 pos = start + ix
-
+		tuple1 = tuple2 = 'NN'
+		if (ix - 1) >= 0:
+			tuple1 = aa_seq[ix - 1] + a_bp
+		if (ix + 1) < len(aa_seq):
+			tuple2 = a_bp + aa_seq[ix + 1] 
+		
 		# no point in going through this if no ancestral identification
-		if a_bp != 'N':
+		# no point in going through this if possible CpG mutation
+		if a_bp != 'N' and tuple1 != 'CG' and tuple2 != 'CG':
 			allele = 'N'
 			if pos in var1:
 				# fixed in focal lineage
@@ -149,7 +156,7 @@ def main():
 	var3 = get_variants(vcf3)
 
 	o = open(out_file, 'w')
-	o.write('chr,start,end,gcstart,AT_GC,GC_AT,ancAT,ancGC\n')
+	o.write('chr,start,end,gcstar,AT_GC,GC_AT,ancAT,ancGC\n')
 	for start in range(1, chr_lengths[chr] + 1, window):
 		end = start + window - 1
 		if end > chr_lengths[chr]:

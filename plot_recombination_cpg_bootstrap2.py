@@ -4,8 +4,14 @@ import pandas as pd
 import numpy as np
 import sys
 from itertools import izip
+import argparse
 
-dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/TSS/cpg/'
+parser = argparse.ArgumentParser()
+parser.add_argument("--sp", help="species for which to run analysis")
+args = parser.parse_args()
+sp = args.sp
+
+dir = '/mnt/gluster/home/sonal.singhal1/%s/analysis/TSS/cpg/' % sp
 out = '%ssummary_bootstrap.csv' % (dir)
 boot_files = glob.glob('%sboot*csv' % dir)
 
