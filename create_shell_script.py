@@ -8,9 +8,12 @@ chrs = [ 'chr1', 'chr1A', 'chr1B', 'chr2', 'chr3',  'chr4', 'chr4A', 'chr5', 'ch
 long_chrs = [ 'chr1', 'chr1A', 'chr2', 'chr3',  'chr4', 'chr4A', 'chr5', 'chr6', 'chr7', 'chr8',
          'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15']
 
+# for chr in chrs:
+#	print "echo \'python calc_dnds.py --chr %s\' | qsub -l h_vmem=5g -cwd -V -j y -N '%s'" % (chr, chr)
+
 for chr in long_chrs:
 	for sp in ['ZF', 'LTF']:
-		print "echo \'python plot_recombination_cpg.py --sp %s --chr %s\' | qsub -l h_vmem=5g -cwd -V -j y -N %s_%s" % (sp, chr, sp, chr)
+		print "echo \'python get_rho_across_genes.py --sp %s --chr %s\' | qsub -l h_vmem=5g -cwd -V -j y -N %s_%s" % (sp, chr, sp, chr)
 
 
 #i = 0

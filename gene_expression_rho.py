@@ -4,17 +4,23 @@ from itertools import izip
 
 recom_file = '/mnt/gluster/home/sonal.singhal1/%s/analysis/LDhelmet/maps/chr%s_recombination_bpen100.txt'
 gff = '/mnt/gluster/home/sonal.singhal1/reference/Taeniopygia_guttata.gff'
-gexp = '/mnt/gluster/home/sonal.singhal1/reference/Balakrishnan2015_gexp.csv'
+# gexp = '/mnt/gluster/home/sonal.singhal1/reference/gexp/Balakrishnan2015testes_gexp.csv'
+gexp = '/mnt/gluster/home/sonal.singhal1/reference/gexp/Balakrishnan2015_gexp.csv'
 
 chrs = ['1', '1A', '2', '3', '4', '4A', '5', '6', \
 	'7', '8', '9', '10', '11', 'chr12', '13', '14', '15']
+allchrs =  [	'1', '1A', '1B', '2', '3', '4', '4A', '5', '6', \
+        	'7', '8', '9', '10', '11', '12', '13', '14', '15',
+		'17', '18', '19', '20', '21', '22', '23', '24', '25', '26',
+		'27', '28', 'LG2', 'LGE22', 'Z']
 
-# now start it, only include gexp that is expressed
+
 gexp_f = pd.read_csv(gexp)
-gexp_f = gexp_f[gexp_f.fpkm > 0]
 gexp = {}
 for id, fpkm in izip(gexp_f.gene, gexp_f.fpkm):
-	gexp[id] = fpkm
+	gexp[id] = fpkm 
+# for id, hfpkm, tfpkm, afpkm in izip(gexp_f.gene, gexp_f.hybrid_fpkm, gexp_f.timor_fpkm, gexp_f.all_fpkm):
+#	gexp[id] = {'hybrid': hfpkm, 'timor': tfpkm, 'all': afpkm}
 gexp_f = ''
 
 # need to identify location of first gene and span
@@ -24,7 +30,7 @@ gff = pd.read_csv(gff, sep='\t', header=None, names=['chr', 'type', 'cds_mrna',
 gff['id'] = [x.replace('ID=', '') for x in gff.id]
 gff['id'] = [x.replace('Parent=', '') for x in gff.id]
 gff['id'] = [x.replace(';', '') for x in gff.id]
-gff = gff[gff.chr.isin(chrs)]
+#gff = gff[gff.chr.isin(chrs)]
 
 # chr -> gene -> first exon & entire length & orient
 genes = {}
@@ -73,10 +79,12 @@ def get_rhos(rho, chr, gene, genes, type):
 
 	return rho
 
-out = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/TSS/gene_expression_rho.Balakrishnan2015.csv'
+out = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/TSS/gene_expression_rho.Balakrishnan2015.all.csv'
+# out = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/TSS/gene_expression_rho.Balakrishnan2015_testes.all.csv'
 o = open(out, 'w')
-o.write('chr,gene,fpkm,zfexonrho,ltfexonrho,zfgenerho,ltfgenerho\n')
-for chr in genes:
+o.write('chr,gene,all_fpkm,zfexonrho,ltfexonrho,zfgenerho,ltfgenerho\n')
+# o.write('chr,gene,hybrid_fpkm,timor_fpkm,all_fpkm,zfexonrho,ltfexonrho,zfgenerho,ltfgenerho\n')
+for chr in allchrs:
 	ltfrho = pd.read_csv(recom_file % ('LTF', chr), sep=" ", skiprows=3, header=None,
 			names=['left_snp', 'right_snp', 'meanrho', 'p0.025', 'p0.975'])
 	zfrho = pd.read_csv(recom_file % ('ZF', chr), sep=" ", skiprows=3, header=None,
@@ -91,4 +99,5 @@ for chr in genes:
 			zf_gene = get_rhos(zfrho, chr, gene, genes, 'ends')
 
 			o.write('%s,%s,%s,%s,%s,%s,%s\n' % (chr, gene, gexp[gene], zf_exon, ltf_exon, zf_gene, ltf_gene))
+			# o.write('%s,%s,%s,%s,%s,%s,%s,%s,%s\n' % (chr, gene, gexp[gene]['hybrid'], gexp[gene]['timor'], gexp[gene]['all'], zf_exon, ltf_exon, zf_gene, ltf_gene))
 o.close()
