@@ -59,7 +59,7 @@ def get_lineage_mutations(seq, counts):
 				cpg = True
 		
 		if anc != 'N' and gfor in ['A', 'T', 'C', 'G']:
-			if not cpg or cpg:
+			if not cpg:
 				if anc in ['A', 'T']:
 					counts[int(ix/100.)]['ancAT'] += 1
 				elif anc in ['G', 'C']:
@@ -81,7 +81,7 @@ def main():
 			'Gmag': '/mnt/gluster/home/sonal.singhal1/Darwin/g_magnirostris/Geospiza_magnirostris.fasta'
 		}
 	
-	out = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/bgc_hotspots/gfortis.hotspots_wCpG.csv'
+	out = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/bgc_hotspots/gfortis.hotspots_noCpG.csv'
 	o = open(out, 'w')
 	o.write('chr,midpoint,spot_type,bin,ancAT,ancGC,AT_GC,GC_AT\n')
 	spots = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/bgc_hotspots/matched_hotspots.01GC.001CpG.all_finches.csv'
