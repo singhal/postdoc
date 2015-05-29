@@ -39,11 +39,11 @@ def get_coldspots(coldspot_file):
 def get_cg_data(genome, spots):
 	for chr in spots:
 		for center in spots[chr]:
-			start1 = center - 5500
-			end1 = center - 500
+			start1 = center - 5000
+			end1 = center
 			
-			start2 = center + 500
-			end2 = center + 5500
+			start2 = center
+			end2 = center + 5000
 
 			seq = ''
 			out = subprocess.Popen('samtools faidx %s %s:%s-%s' % (genome, chr, start1, end1), shell=True, stdout=subprocess.PIPE)

@@ -54,11 +54,11 @@ for start in range(1, chr_lengths[chr], 50000):
 
 	out.write('%s\n' % len(tmp_sites))
 	
-for hot_start in d.zstart:
-	start = hot_start - 25000
+for hot_mid in d.zmid:
+	start = hot_mid - 25000
 	if start < 1:
 		start = 1
-	end = hot_start + 25000
+	end = hot_mid + 25000
 	if end > chr_lengths[chr]:
 		end = chr_lengths[chr]
 

@@ -73,20 +73,21 @@ def parse_file(file, start, lr_cutoff, center):
 		match_heat = d.X3.mean() / back_rho
 		match_start = start + (spot[0] - 25000)
 		match_length = spot[1] - spot[0]
+		match_mid = match_start + int(match_length / 2.0)
 					
-	return (match_lk, match_heat, match_start, match_length, back_rho / 1000.)
+	return (match_lk, match_heat, match_start, match_mid, match_length, back_rho / 1000.)
 
 
 def run_script(file, sp, chr, start, lr_cutoff, center, spots):
 	try:
 		if os.stat(file).st_size > 0:
-                        match_lk, match_heat, match_start, match_length, match_back_rho = parse_file(file, start, lr_cutoff, center)
+                        match_lk, match_heat, match_start, match_mid, match_length, match_back_rho = parse_file(file, start, lr_cutoff, center)
 	
 			if chr not in spots[sp]:
 		                spots[sp][chr] = {}
 
 			if match_lk != 'NA':
-        			spots[sp][chr][match_start] = {'lk': match_lk, 'heat': match_heat, 'length': match_length, 'flank_rho': match_back_rho}
+        			spots[sp][chr][match_mid] = {'start': match_start, 'lk': match_lk, 'heat': match_heat, 'length': match_length, 'flank_rho': match_back_rho}
         except:
 		pass
 
@@ -107,7 +108,7 @@ for out_zf in files:
 
 
 o = open(out, 'w')
-o.write('chr,zstart,zlength,zbackrho,zheat,zlk,lstart,llength,lbackrho,lheat,llk\n')
+o.write('chr,zmid,zlength,zbackrho,zheat,zlk,lmid,llength,lbackrho,lheat,llk\n')
 
 for chr in chrs:
 	# zf first, and then ltf
@@ -122,53 +123,75 @@ for chr in chrs:
 		if min_dist <= max_dist:
 			matches[spot] = ltf_spots[dists.index(min_dist)]
 	
+	zf_start_mid = {}
+	for mid in spots['ZF'][chr]:
+		zf_start_mid[spots['ZF'][chr][mid]['start']] = mid
+
+	ltf_start_mid = {}
+        for mid in spots['LTF'][chr]:
+                ltf_start_mid[spots['LTF'][chr][mid]['start']] = mid
+
+	zf_starts = sorted([spots['ZF'][chr][mid]['start'] for mid in spots['ZF'][chr]])
+	ltf_starts = sorted([spots['LTF'][chr][mid]['start'] for mid in spots['LTF'][chr]])
+
 	# want to get rid of any hotspots that are too close to each other
-	for a, b in izip(zf_spots, zf_spots[1:]):
+	for a, b in izip(zf_starts, zf_starts[1:]):
 		dist = b - a
 		if dist < max_dist:
-			if a not in matches and b not in matches:
-				del spots['ZF'][chr][b]
-			if a not in matches and b in matches:
-	 			del spots['ZF'][chr][a]
-			if a in matches and b in matches:
-				del spots['ZF'][chr][b]
-		
+			mid_a = zf_start_mid[a]
+			mid_b = zf_start_mid[b]
+			if mid_a not in matches and mid_b not in matches:
+				del spots['ZF'][chr][mid_b]
+			if mid_a not in matches and mid_b in matches:
+	 			del spots['ZF'][chr][mid_a]
+			if mid_a in matches and mid_b in matches:
+				del spots['ZF'][chr][mid_b]
+				del matches[mid_b]
+			if mid_a in matches and mid_b not in matches:
+				if mid_b in spots['ZF'][chr]:
+					del spots['ZF'][chr][mid_b]	
+	
 	rev_matches = {}
 	for a, b in matches.items():
 		rev_matches[b] = a
 
-	for a, b in izip(ltf_spots, ltf_spots[1:]):
+	for a, b in izip(ltf_starts, ltf_starts[1:]):
                 dist = b - a
                 if dist < max_dist:
-                        if a not in rev_matches and b not in rev_matches:
-				del spots['LTF'][chr][b]
-                        if a not in rev_matches and b in rev_matches:
-                                del spots['LTF'][chr][a]
-                        if a in rev_matches and b in rev_matches:
-                                del spots['LTF'][chr][b]
-                                del matches[rev_matches[b]]
+			mid_a = ltf_start_mid[a]
+			mid_b = ltf_start_mid[b]
+                        if mid_a not in rev_matches and mid_b not in rev_matches:
+				del spots['LTF'][chr][mid_b]
+                        if mid_a not in rev_matches and mid_b in rev_matches:
+                                del spots['LTF'][chr][mid_a]
+                        if mid_a in rev_matches and mid_b in rev_matches:
+                                del spots['LTF'][chr][mid_b]
+                                del matches[rev_matches[mid_b]]
+			if mid_a in rev_matches and mid_b not in rev_matches:
+				if mid_b in spots['LTF'][chr]:
+					del spots['LTF'][chr][mid_b]
 	
 	rev_matches = {}
         for a, b in matches.items():
                 rev_matches[b] = a
 
-	for zstart in spots['ZF'][chr]:
-		if zstart in matches:
-			lstart = matches[zstart]
-			o.write('%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n' % (chr, zstart, spots['ZF'][chr][zstart]['length'], 
-								spots['ZF'][chr][zstart]['flank_rho'], 
-								spots['ZF'][chr][zstart]['heat'],
-								spots['ZF'][chr][zstart]['lk'], lstart, spots['LTF'][chr][lstart]['length'], 
-								spots['LTF'][chr][lstart]['flank_rho'],
-								spots['LTF'][chr][lstart]['heat'], spots['LTF'][chr][lstart]['lk']))
+	for zmid in spots['ZF'][chr]:
+		if zmid in matches:
+			lmid = matches[zmid]
+			o.write('%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n' % (chr, zmid, spots['ZF'][chr][zmid]['length'], 
+								spots['ZF'][chr][zmid]['flank_rho'], 
+								spots['ZF'][chr][zmid]['heat'],
+								spots['ZF'][chr][zmid]['lk'], lmid, spots['LTF'][chr][lmid]['length'], 
+								spots['LTF'][chr][lmid]['flank_rho'],
+								spots['LTF'][chr][lmid]['heat'], spots['LTF'][chr][lmid]['lk']))
 		else:
-			o.write('%s,%s,%s,%s,%s,%s,NA,NA,NA,NA,NA\n' % (chr, zstart, spots['ZF'][chr][zstart]['length'], 
-								spots['ZF'][chr][zstart]['flank_rho'],
-								spots['ZF'][chr][zstart]['heat'],
-                                                                spots['ZF'][chr][zstart]['lk']))
+			o.write('%s,%s,%s,%s,%s,%s,NA,NA,NA,NA,NA\n' % (chr, zmid, spots['ZF'][chr][zmid]['length'], 
+								spots['ZF'][chr][zmid]['flank_rho'],
+								spots['ZF'][chr][zmid]['heat'],
+                                                                spots['ZF'][chr][zmid]['lk']))
 	
-	for lstart in spots['LTF'][chr]:
-		if lstart not in rev_matches:
-			o.write('%s,NA,NA,NA,NA,NA,%s,%s,%s,%s,%s\n' % (chr, lstart, spots['LTF'][chr][lstart]['length'],
-									spots['LTF'][chr][lstart]['flank_rho'],
-                                                                spots['LTF'][chr][lstart]['heat'], spots['LTF'][chr][lstart]['lk']))
+	for lmid in spots['LTF'][chr]:
+		if lmid not in rev_matches:
+			o.write('%s,NA,NA,NA,NA,NA,%s,%s,%s,%s,%s\n' % (chr, lmid, spots['LTF'][chr][lmid]['length'],
+									spots['LTF'][chr][lmid]['flank_rho'],
+                                                                	spots['LTF'][chr][lmid]['heat'], spots['LTF'][chr][lmid]['lk']))

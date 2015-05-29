@@ -63,7 +63,7 @@ def main():
 	elif sp == 'gfor':
 		dir = 'g_fortis'
 		name = 'Geospiza_fortis'
-
+	
 	chr_lengths = { 'chr10': 20806668, 'chr11': 21403021, 'chr12': 21576510, 'chr13': 16962381,
                 'chr14': 16419078, 'chr15': 14428146, 'chr16': 9909, 'chr17': 11648728,
                 'chr18': 11201131, 'chr19': 11587733, 'chr1A': 73657157, 'chr1B': 1083483,
@@ -75,8 +75,10 @@ def main():
                 'chrLG5': 16416, 'chrLGE22': 883365, 'chrZ': 72861351, 'chrZ_random': 2969867}
 
 	length = chr_lengths[chr]
-	vcf = '/mnt/gluster/home/sonal.singhal1/Darwin/%s/vcf/%s_%s.vcf.gz' % (dir, name, chr)
-	out = '/mnt/gluster/home/sonal.singhal1/Darwin/%s/%s_%s.fa' % (dir, name, chr)
+	vcf = '/mnt/gluster/home/sonal.singhal1/ficedula/Ficedula_albicollis.%s.vcf.gz' % chr
+	out = '/mnt/gluster/home/sonal.singhal1/ficedula/Ficedula_albicollis.%s.fa' % chr
+	#vcf = '/mnt/gluster/home/sonal.singhal1/Darwin/%s/vcf/%s_%s.vcf.gz' % (dir, name, chr)
+	#out = '/mnt/gluster/home/sonal.singhal1/Darwin/%s/%s_%s.fa' % (dir, name, chr)
 
 	seq = get_var(vcf, chr, length)
 	print_seq(chr, seq, out)

@@ -21,8 +21,8 @@ def get_masked(seq, genome, chr):
                         mask += l.upper().rstrip()
 	mask = list(mask)
 
-	for pos, (ref, mask) in enumerate(zip(seq, mask)):
-		if mask != '0':
+	for pos, mask_pos in enumerate(mask):
+		if int(mask_pos) > 3:
 			seq[pos] = 'N'
 
         return list(seq)
@@ -70,7 +70,7 @@ def print_seq(sp, chr, seq):
 def main():
         parser = argparse.ArgumentParser()
         parser.add_argument("--chr", help="chromosome for which to run analysis")
-        parser.add_argument("--sp", help="species [ZF|LTF] for which to run")
+        parser.add_argument("--sp", help="species [ZF|LTF|DBF] for which to run")
 
 	args = parser.parse_args()
 	chr = args.chr

@@ -49,7 +49,7 @@ def get_anc(seq):
 	anc = ''
 
 	# get ancestral base
-	for bases in izip(seq['ZF'], seq['LTF'], seq['DBF'], seq['Gfor'], seq['Gmag']):
+	for bases in izip(seq['ZF'], seq['LTF'], seq['DBF'], seq['Gfor'], seq['Gmag'], seq['Fic']):
                 bases = list(bases)
                 anc_base = get_ancestral_bp(bases)
                 anc += anc_base
@@ -78,12 +78,13 @@ def main():
                         'ZF': '/mnt/gluster/home/sonal.singhal1/reference/ZF_reference.fa',
                         'DBF': '/mnt/gluster/home/sonal.singhal1/reference/DBF_reference.fa',
                         'Gfor': '/mnt/gluster/home/sonal.singhal1/Darwin/g_fortis/Geospiza_fortis.fasta',
-                        'Gmag': '/mnt/gluster/home/sonal.singhal1/Darwin/g_magnirostris/Geospiza_magnirostris.fasta'
+                        'Gmag': '/mnt/gluster/home/sonal.singhal1/Darwin/g_magnirostris/Geospiza_magnirostris.fasta',
+			'Fic': '/mnt/gluster/home/sonal.singhal1/ficedula/Ficedula_albicollis.fasta'
                 }
 	
 	chrs = get_chr(genomes, chr)
 	anc = get_anc(chrs)
-	outfile = '/mnt/gluster/home/sonal.singhal1/reference/all_finches.ancestral_%s.fa' % chr
+	outfile = '/mnt/gluster/home/sonal.singhal1/reference/all_birds.ancestral_%s.fa' % chr
 	print_chr(chr, anc, outfile)	
 	print '%s is done!' % chr
 

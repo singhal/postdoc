@@ -25,33 +25,28 @@ d = pd.read_csv(hot_file)
 d = d[d.chr == chr]
 
 d['spottype'] = ['NA'] * d.shape[0]
-d['shared_start'] = ['NA'] * d.shape[0]
-d['shared_length'] = ['NA'] * d.shape[0]
+d['shared_mid'] = ['NA'] * d.shape[0]
 d.ix[ (d.zlk >= 10), 'spottype'] = 'zf'
 d.ix[ (d.llk >= 10), 'spottype'] = 'ltf'
 d.ix[ (d.zlk >= 10) & (d.llk >= 10), 'spottype'] = 'shared'
 if sp == 'ZF':
-	d.ix[ (d.spottype == 'shared') | (d.spottype == 'zf'), 'shared_start'] = d.zstart
-	d.ix[ (d.spottype == 'shared') | (d.spottype == 'zf'), 'shared_length'] = d.zlength
-	d.ix[ (d.spottype == 'ltf'), 'shared_start'] = d.lstart
-	d.ix[ (d.spottype == 'ltf'), 'shared_length'] = d.llength
+	d.ix[ (d.spottype == 'shared') | (d.spottype == 'zf'), 'shared_mid'] = d.zmid
+	d.ix[ (d.spottype == 'ltf'), 'shared_mid'] = d.lmid
 if sp == 'LTF':
-	d.ix[ (d.spottype == 'shared') | (d.spottype == 'ltf'), 'shared_start'] = d.lstart
-        d.ix[ (d.spottype == 'shared') | (d.spottype == 'ltf'), 'shared_length'] = d.llength
-        d.ix[ (d.spottype == 'zf'), 'shared_start'] = d.zstart
-        d.ix[ (d.spottype == 'zf'), 'shared_length'] = d.zlength
+	d.ix[ (d.spottype == 'shared') | (d.spottype == 'ltf'), 'shared_mid'] = d.lmid
+        d.ix[ (d.spottype == 'zf'), 'shared_mid'] = d.zmid
 d = d[d.spottype != 'NA']
 
-d = d.sort(['shared_start'])
+d = d.sort(['shared_mid'])
 # don't want hotspots that are too close to each other
-d['dist_diff'] = d.shared_start.diff()
+d['dist_diff'] = d.shared_mid.diff()
 d = d[d.dist_diff > 5000]
 
 rho = pd.read_csv(rho_file, sep=" ", skiprows=3, header=None,
 		names=['left_snp', 'right_snp', 'meanrho', 'p0.025', 'p0.975'])
 
-for type, start, length in izip(d.spottype, d.shared_start, d.shared_length):
-	midpoint = int(start) + int(int(length) / 2.0)
+for type, midpoint in izip(d.spottype, d.shared_mid):
+	midpoint = int(midpoint)
 	block_start = midpoint - 20000
 	block_end = midpoint + 20000
 
