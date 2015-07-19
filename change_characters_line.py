@@ -1,7 +1,7 @@
 import re
 
-ref_genome = '/mnt/lustre/home/sonal.singhal1/reference/taeGut1.bamorder.fasta'
-out = '/mnt/lustre/home/sonal.singhal1/reference/taeGut1_60.bamorder.fasta'
+ref_genome = '/mnt/gluster/home/sonal.singhal1/Darwin/g_fortis/Geospiza_singleline.fa'
+out = '/mnt/gluster/home/sonal.singhal1/Darwin/g_fortis/geo60.fa'
 
 infile = open(ref_genome, 'r')
 outfile = open(out, 'w')
@@ -14,7 +14,6 @@ for l in infile:
 		left = ''
 		outfile.write("%s\n" % l)
 	else:
-		l = l.upper()
 		left += l
 		if len(left) >= 60:
 			outfile.write("%s\n" % left[0:60])

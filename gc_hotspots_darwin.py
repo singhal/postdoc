@@ -76,16 +76,17 @@ def main():
 	genomes = {	'LTF': '/mnt/gluster/home/sonal.singhal1/reference/LTF_reference.fa',
 			'ZF': '/mnt/gluster/home/sonal.singhal1/reference/ZF_reference.fa',
 			'DBF': '/mnt/gluster/home/sonal.singhal1/reference/DBF_reference.fa',
-			'anc': '/mnt/gluster/home/sonal.singhal1/reference/ancestral_genome.all_finches.fa',
-			'Gfor': '/mnt/gluster/home/sonal.singhal1/Darwin/g_fortis/Geospiza_fortis.fasta',
+			'anc': '/mnt/gluster/home/sonal.singhal1/reference/ancestral_genome.all_birds.fa',
+			'Gfor': '/mnt/gluster/home/sonal.singhal1/Darwin/g_fortis/aligned_reads/Geospiza_fortis.fasta',
 			'Gmag': '/mnt/gluster/home/sonal.singhal1/Darwin/g_magnirostris/Geospiza_magnirostris.fasta',
-			'Fic': '/mnt/gluster/home/sonal.singhal1/ficedula/Ficedula_albicollis.fasta'
+			'Fic': '/mnt/gluster/home/sonal.singhal1/ficedula/aligned_reads/Ficedula_albicollis.fasta'
 		}
 	
 	out = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/bgc_hotspots/geospiza.hotspots_noCpG.csv'
 	o = open(out, 'w')
 	o.write('chr,midpoint,spot_type,bin,ancAT,ancGC,AT_GC,GC_AT\n')
-	spots = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/bgc_hotspots/matched_hotspots.01GC.001CpG.geospiza.csv'
+	# using ficedula because w/r/t to all birds
+	spots = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/bgc_hotspots/matched_hotspots.01GC.001CpG.ficedula.csv'
 	spots = pd.read_csv(spots)
 	
 	# get matched hotspots and coldspots

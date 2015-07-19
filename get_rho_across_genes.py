@@ -26,11 +26,15 @@ def get_genes(gff, chr):
         for id, group in gff[gff.cds_mrna == 'CDS'].groupby(['id']):
                 for start, stop in izip(group.start, group.stop):
                         genes[id]['exons'].append([start,stop])
+
+	exon_length = 0
+	intron_length = 0
 	
 	for id in genes:
 		if genes[id]['orient'] == '+':
 			for ix, (exon_start, exon_end) in enumerate(genes[id]['exons']):
 				length = exon_end - exon_start
+				exon_length += length
 				for pos_ix, pos in enumerate(range(exon_start, exon_end)):
 					rel_pos = '%.2f' % (pos_ix / float(length))
 					features[pos] = {'rel_pos': rel_pos, 'type': 'exon', 'num': ix, 'tot_num': len(genes[id]['exons'])}
@@ -38,12 +42,14 @@ def get_genes(gff, chr):
 				intron_start = first[1]
 				intron_end = second[0]
 				length = intron_end - intron_start
+				intron_length += length
 				for pos_ix, pos in enumerate(range(intron_start, intron_end)):
                                         rel_pos = '%.2f' % (pos_ix / float(length))
                                         features[pos] = {'rel_pos': rel_pos, 'type': 'intron', 'num': ix, 'tot_num': len(genes[id]['exons']) - 1}
 		if genes[id]['orient'] == '-':
                         for ix, (exon_start, exon_end) in enumerate(genes[id]['exons']):
                                 length = exon_end - exon_start
+				exon_length += length
 				rel_ix = len(genes[id]['exons']) - ix - 1
                                 for pos_ix, pos in enumerate(range(exon_start, exon_end)):
                                         rel_pos = '%.2f' % (1 - (pos_ix / float(length)))
@@ -52,11 +58,15 @@ def get_genes(gff, chr):
                                 intron_start = first[1]
                                 intron_end = second[0]
                                 length = intron_end - intron_start
+				intron_length += length
 				rel_ix = (len(genes[id]['exons']) - 1) - ix - 1
                                 for pos_ix, pos in enumerate(range(intron_start, intron_end)):
                                         rel_pos = '%.2f' % (1 - (pos_ix / float(length)))
                                         features[pos] = {'rel_pos': rel_pos, 'type': 'intron', 'num': rel_ix, 'tot_num': len(genes[id]['exons']) - 1}	
 	genes = {}
+
+	print 'exon length: %s' % exon_length
+	print 'intron length: %s' % intron_length
 
         return features
 
@@ -74,6 +84,11 @@ def get_rhos(out_file, rho_file, features):
 		start = int(d[0])
 		end = int(d[1])
 		rho = float(d[2])
+
+		if start in features:
+			print '%s,%s' % (start, features[start]['type'])
+		if end in features:
+			print '%s,%s' % (end, features[end]['type'])
 
 		for bp in range(start, end):
 			if bp in features:

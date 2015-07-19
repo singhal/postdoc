@@ -31,8 +31,8 @@ def get_var(vcf, chr, length):
 							genos[num] = ambig[allele][sec_allele]
 						num = num + 1	
 						genos[num] = allele			
-
 					lk = re.split(',', d[-1])
+					lk = [int(x) for x in lk]
 
 					geno = genos[lk.index(min(lk))]
 					seq[pos] = geno
@@ -75,10 +75,10 @@ def main():
                 'chrLG5': 16416, 'chrLGE22': 883365, 'chrZ': 72861351, 'chrZ_random': 2969867}
 
 	length = chr_lengths[chr]
-	vcf = '/mnt/gluster/home/sonal.singhal1/ficedula/Ficedula_albicollis.%s.vcf.gz' % chr
-	out = '/mnt/gluster/home/sonal.singhal1/ficedula/Ficedula_albicollis.%s.fa' % chr
-	#vcf = '/mnt/gluster/home/sonal.singhal1/Darwin/%s/vcf/%s_%s.vcf.gz' % (dir, name, chr)
-	#out = '/mnt/gluster/home/sonal.singhal1/Darwin/%s/%s_%s.fa' % (dir, name, chr)
+	#vcf = '/mnt/gluster/home/sonal.singhal1/ficedula/Ficedula_albicollis.%s.vcf.gz' % chr
+	#out = '/mnt/gluster/home/sonal.singhal1/ficedula/Ficedula_albicollis.%s.fa' % chr
+	vcf = '/mnt/gluster/home/sonal.singhal1/Darwin/%s/vcf/%s_%s.vcf.gz' % (dir, name, chr)
+	out = '/mnt/gluster/home/sonal.singhal1/Darwin/%s/%s_%s.fa' % (dir, name, chr)
 
 	seq = get_var(vcf, chr, length)
 	print_seq(chr, seq, out)

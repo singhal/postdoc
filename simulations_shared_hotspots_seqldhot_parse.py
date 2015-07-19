@@ -10,9 +10,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--match_dist", help="match_dist")
 args = parser.parse_args()
 
-files = glob.glob('/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspots/seqldhot_hotspots/*txt')
-chrs = ['chr1', 'chr1A', 'chr2', 'chr3', 'chr4', 'chr4A', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9', \
-        'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chrZ']
+files = glob.glob('/mnt/gluster/home/sonal.singhal1/simulations/shared/seqldhot/ZF/*sum')
 
 lr_cutoff = 10
 center = 25000
@@ -23,7 +21,7 @@ match_dist = int(args.match_dist)
 # spots within 3000 of each other will be dropped
 max_dist = 3000
 
-out =  '/mnt/gluster/home/sonal.singhal1/ZF/analysis/hotspots/spot2kb_flank40kb_matchdist%s.seqldhot_validate_hotspots.csv' % match_dist
+out =  '/mnt/gluster/home/sonal.singhal1/simulations/shared/seqldhot_validate_hotspots.match_dist%s.csv' % match_dist
 
 # borrowed from 
 # http://nbviewer.ipython.org/github/goldenhelix/cftr-variant-classification-analysis/blob/master/CFTR%20Data%20Munging.ipynb
@@ -102,14 +100,19 @@ def run_script(file, sp, chr, start, lr_cutoff, center, spots):
 	return spots
 
 
+chrs = {}
 spots = {'ZF': {}, 'LTF': {}}
 for out_zf in files:
-	out_zf = out_zf + '.sum'
+	rho_zf = float(re.search('rho([0-9|\.]+)', out_zf).group(1)) 
+	rho_ltf = rho_zf / 2.0
 	out_ltf = out_zf.replace('ZF','LTF')
+	out_ltf = out_ltf.replace(str(rho_zf), str(rho_ltf))
 	
-	chr = re.search('(chr[0-9|A-Z]+)', out_zf).group(1)
+	chr = re.search('(rho.*diff\d+_\d+)', out_zf).group(1)
 	start = re.search('_(\d+)\.seq', out_zf).group(1)
 	start = int(start)
+	if chr not in chrs:
+		chrs[chr] = 1
 
 	spots = run_script(out_zf, 'ZF', chr, start, lr_cutoff, center, spots)
 	spots = run_script(out_ltf, 'LTF', chr, start, lr_cutoff, center, spots)
@@ -129,20 +132,29 @@ o.write('chr,zmid,zlength,zbackrho,zheat,zlk,lmid,llength,lbackrho,lheat,llk\n')
 
 for chr in chrs:
 	# first get rid of spots too close to each other
-	zf_mids = sorted(spots['ZF'][chr])
-	ltf_mids = sorted(spots['LTF'][chr])
-
-	zf_mids = [x for x in removeCloseItems(zf_mids, max_dist)]
-	ltf_mids = [x for x in removeCloseItems(ltf_mids, max_dist)]
+	if chr in spots['ZF']:
+		zf_mids = sorted(spots['ZF'][chr])
+		zf_mids = [x for x in removeCloseItems(zf_mids, max_dist)]
+	else:
+		zf_mids = []
+	if chr in spots['LTF']:
+		ltf_mids = sorted(spots['LTF'][chr])
+		ltf_mids = [x for x in removeCloseItems(ltf_mids, max_dist)]
+	else:
+		ltf_mids = []
 
 	matches = {}
 	rev_matches = {}
 	for zf_mid in zf_mids:
 		dists = [abs(x - zf_mid) for x in ltf_mids]
-		min_dist = np.min(dists)
-		if min_dist < match_dist:
-			matches[zf_mid] = ltf_mids[dists.index(min_dist)]
-			rev_matches[ltf_mids[dists.index(min_dist)]] = zf_mid
+		if len(dists) > 1:
+			min_dist = np.min(dists)
+		elif len(dists) == 1:
+			min_dist = dists[0]
+		if len(dists) > 0:
+			if min_dist < match_dist:
+				matches[zf_mid] = ltf_mids[dists.index(min_dist)]
+				rev_matches[ltf_mids[dists.index(min_dist)]] = zf_mid
 
 	for zmid in zf_mids:
 		if zmid in matches:

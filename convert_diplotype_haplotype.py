@@ -1,7 +1,7 @@
 import re
 import random
 
-file = '/mnt/gluster/home/sonal.singhal1/Darwin/g_fortis/Geospiza_fortis.fasta'
+file = '/mnt/gluster/home/sonal.singhal1/ficedula/Ficedula_albicollis.fasta'
 
 hets = { 'M': ['A', 'C'], 'R': ['A', 'G'], 'W': ['A', 'T'], 'S': ['C', 'G'], 'Y': ['C', 'T'], 'K': ['G', 'T'] }
 
@@ -33,7 +33,7 @@ for l in f_in:
 			chromosome = ''
 			f_out.close()
 		chr = re.match('>(\S+)', l).group(1)
-		file = '%sGeospiza_%s_haplotypes.fasta' % (dir, chr)
+		file = '%sFicedula_%s_haplotypes.fasta' % (dir, chr)
 		f_out = open(file, 'w')
 	else:
 		chromosome += l.rstrip().upper()

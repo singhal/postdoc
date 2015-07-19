@@ -113,19 +113,20 @@ def main():
 		out_dir = '/mnt/gluster/home/sonal.singhal1/simulations/shared/ZF/'
 		theta = 0.0131
 		nsam = 38
-		rhos = [0.002, 0.01, 0.1, 0.5]
+		#rhos = [0.8]
+		rhos = [0.001, 0.002, 0.01, 0.1, 0.5, 0.8]
 	if sp == 'LTF':
 		out_dir = '/mnt/gluster/home/sonal.singhal1/simulations/shared/LTF/'
                 theta = 0.0073
                 nsam = 40
-		rhos = [0.001, 0.005, 0.05, 0.25]
+		#rhos = [0.0005, 0.001, 0.005, 0.4]
+		rhos = [0.0005, 0.001, 0.005, 0.05, 0.25, 0.4]
 	# sim MB
 	seq_size = 1000000
 	# num replicates to simulate
 	num_sim = 10
 	# hotspot / coldspot difference, > 1
-	# diffs_array = [[20]*12, [40]*12, [60]*12]
-	diffs_array = [[5]*12]
+	diffs_array = [[5]*12, [10]*12, [15]*12, [20]*12, [40]*12, [60]*12, [80]*12, [100]*12]
 	# hotspot length
 	hotspot_lengths = [2000]
 	# A, C, T, G
@@ -140,8 +141,10 @@ def main():
 		for ix in range(num_sim):
 			for diffs in diffs_array:
 				haplo_file = '%shaplo_rho%s_diff%s_%s.fa' % (out_dir, rho, diffs[0], ix)
-				if not os.path.isfile(haplo_file):
-					simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hotspot_lengths, ix)
+				haplo_file1 = '%shaplo/haplo_rho%s_diff%s_%s.fa' % (out_dir, rho, diffs[0], ix)
+				if not os.path.isfile(haplo_file) and not os.path.isfile(haplo_file1):
+					print haplo_file
+					#simulate(out_dir, seq_size, theta, nsam, eq_freq, mut_rates, rho, diffs, hotspot_lengths, ix)
 
 if __name__ == "__main__":
     main()

@@ -1,12 +1,11 @@
 import glob
 import re
 
-files = glob.glob('/mnt/gluster/home/sonal.singhal1/gene_trees/individual_trees/phyml_files/*phyml')
+files = glob.glob('/mnt/gluster/home/sonal.singhal1/gene_trees2/individual_trees/fasta_files/*aln')
 
 for file in files:
-	'''
 	f_in = open(file, 'r')
-	out = file.replace('fasta', 'phyml')
+	out = file.replace('.fasta.aln', '.phyml')
 	seq = {}
 	id = ''
 	for l in f_in:
@@ -23,6 +22,6 @@ for file in files:
 	for id, sequence in seq.items():
 		out_f.write('%s %s\n' % (id, sequence))
 	out_f.close()
-	'''
-	print '%s %s' % ('~/bin/mraic.pl', file)
+	
+	print '%s %s' % ('~/bin/mraic.pl', out)
 

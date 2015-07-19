@@ -1,6 +1,7 @@
 import re
 import subprocess
 import random
+import numpy as np
 
 def get_alignments(n_align, chr_lengths, genome):
 	genome_length = sum(chr_lengths.values())
@@ -9,6 +10,7 @@ def get_alignments(n_align, chr_lengths, genome):
 	for chr, length in chr_lengths.items():
 		chr_prop[ chr ] = round( n_align * length / float(genome_length))
 	for chr, n_loci in chr_prop.items():
+		print chr
 		tot_n = 0
 		while tot_n < n_loci:
 			start = random.randint(0, chr_lengths[chr])
@@ -17,9 +19,8 @@ def get_alignments(n_align, chr_lengths, genome):
 			n_count = 0
 			for l in seq.stdout:
 				if not re.match('>', l):
-					for i in list(l.rstrip()):
-						if i == '0':
-							n_count += 1
+					n_count += list(l.rstrip()).count('0')
+
 			if n_count > 750:
 				tot_n += 1
 				if chr not in loci:
@@ -47,14 +48,11 @@ def make_fasta_files(loci, names, dir):
 
 def main():
 	chr_lengths = {	'chr10': 20806668, 'chr11': 21403021, 'chr12': 21576510, 'chr13': 16962381,
-			'chr14': 16419078, 'chr15': 14428146, 'chr16': 9909, 'chr17': 11648728,
-			'chr18': 11201131, 'chr19': 11587733, 'chr1A': 73657157, 'chr1B': 1083483,
-			'chr1': 118548696, 'chr20': 15652063, 'chr21': 5979137, 'chr22': 3370227,
-			'chr23': 6196912, 'chr24': 8021379, 'chr25': 1275379, 'chr26': 4907541,
-			'chr27': 4618897, 'chr28': 4963201, 'chr2': 156412533, 'chr3': 112617285,
+			'chr14': 16419078, 'chr15': 14428146, 'chr1A': 73657157,
+			'chr1': 118548696, 'chr2': 156412533, 'chr3': 112617285,
 			'chr4A': 20704505, 'chr4': 69780378, 'chr5': 62374962, 'chr6': 36305782,
-			'chr7': 39844632, 'chr8': 27993427, 'chr9': 27241186, 'chrLG2': 109741,
-			'chrLG5': 16416, 'chrLGE22': 883365 }
+			'chr7': 39844632, 'chr8': 27993427, 'chr9': 27241186}
+	'''
 	names = {'LTF': {'haplo0': 'LTFh_73783a', 'haplo1': 'LTFh_73783b', 'haplo2': 'LTFh_73788a', 'haplo3': 'LTFh_73788b', 'haplo4': 'LTFh_73790a',
 			'haplo5': 'LTFh_73790b', 'haplo6': 'LTFh_73900a', 'haplo7': 'LTFh_73900b', 'haplo8': 'LTFh_73903a', 'haplo9': 'LTFh_73903b',
 			'haplo10': 'LTFh_73907a', 'haplo11': 'LTFh_73907b', 'haplo12': 'LTFh_73933a', 'haplo13': 'LTFh_73933b', 'haplo14': 'LTFh_73942a',
@@ -73,7 +71,14 @@ def main():
                         'haplo35': 'ZF_28456b', 'haplo36': 'ZF_28481a', 'haplo37': 'ZF_28481b'},
 		'DBF': {'haplo0': 'DBFa', 'haplo1': 'DBFb'},
 		'Geospiza': {'haplo0': 'Gfortisa', 'haplo1': 'Gfortisb'} }
-			
+	'''
+
+	names = {'LTF': {'haplo0': 'LTFh_73783a', 'haplo15': 'LTFh_73942b', 'haplo25': 'LTFa_G163b', 'haplo39': 'LTFa_W2994b'},
+                'ZF': {'haplo0': 'ZF_26462a', 'haplo10': 'ZF_26792b', 'haplo25': 'ZF_28313b', 'haplo30': 'ZF_28402a'},
+                'DBF': {'haplo0': 'DBFa', 'haplo1': 'DBFb'},
+                'Geospiza': {'haplo0': 'Gfortisa', 'haplo1': 'Gfortisb'},
+		'Ficedula': {'haplo0': 'Ficedulaa', 'haplo1': 'Ficedulab'}}	
+		
 	dir = '/mnt/gluster/home/sonal.singhal1/gene_trees/'
 	genome = '/mnt/gluster/home/sonal.singhal1/reference/all.masked_genome.fa'
 	loci = get_alignments(1000, chr_lengths, genome) 

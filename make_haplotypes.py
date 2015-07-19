@@ -105,11 +105,11 @@ def main():
 		if chr == 'chrZ':
 			hap_file = '/mnt/gluster/home/sonal.singhal1/ZF/after_vqsr/by_chr/unrel_vcf/gatk.ug.unrel_zf.chrZ.coverage.repeatmasked.filtered.recodedsex.vqsr.phased.vcf.gz'
 	if sp == 'LTF':
-		hap_file = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.%s.filtered.coverage.repeatmasked.vqsr.phased.vcf.gz' % chr
+		hap_file = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.%s.coverage.repeatmasked.filtered.phased.vqsr2.vcf.gz' % chr
 		if chr == 'chrZ':
 			hap_file = '/mnt/gluster/home/sonal.singhal1/LTF/after_vqsr/by_chr/gatk.ug.ltf.chrZ.filtered.coverage.repeatmasked.recodedsex.vqsr.phased.vcf.gz'
 	out_file = '/mnt/gluster/home/sonal.singhal1/gene_trees/%s_%s_haplotypes.fasta' % (sp, chr)
-	genome = '/mnt/gluster/home/sonal.singhal1/reference/taeGut1.bamorder.fasta'
+	genome = '/mnt/gluster/home/sonal.singhal1/reference/taeGut1_60.bamorder.fasta'
 	masked_genome = '/mnt/gluster/home/sonal.singhal1/%s/masked_genome/%s.masked_genome.repeat_masked.fa' % (sp, sp)
 	
 	chr_as_list = get_chromosome(genome, chr)
