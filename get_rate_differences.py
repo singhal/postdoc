@@ -30,15 +30,15 @@ ltf_cmL = []
 rate_ratioL = []
 rate_ratio_normalizedL = []
 
-median_diff = 0.44
+median_diff = 0.424
 
 for chr in cm_chrs:
-	zf_rho = pd.read_csv('%s%s.window100000.bpen100.txt' % (zf_dir, chr))
+	zf_rho = pd.read_csv('%s%s.window1000000.bpen100.txt' % (zf_dir, chr))
 	# convert rho to cM / Mb
 	ratio = (zf_rho.rho * (zf_rho.window_end - zf_rho.window_start)).cumsum().max() / cm_chrs[ chr ]
 	zf_rho[ 'cmrate' ] = zf_rho.rho * (zf_rho.window_end - zf_rho.window_start) / ratio
 	
-	ltf_rho = pd.read_csv('%s%s.window100000.bpen100.txt' % (ltf_dir, chr))
+	ltf_rho = pd.read_csv('%s%s.window1000000.bpen100.txt' % (ltf_dir, chr))
 	# convert rho to cM / Mb
 	ratio = (ltf_rho.rho * (ltf_rho.window_end - ltf_rho.window_start)).cumsum().max() / cm_chrs[ chr ]
 	ltf_rho[ 'cmrate' ] = ltf_rho.rho * (ltf_rho.window_end - ltf_rho.window_start) / ratio 
@@ -66,4 +66,4 @@ for chr in cm_chrs:
 
 d = pd.DataFrame({'chr': chrL, 'window_start': startL, 'window_end': stopL, 'ZF_rho': zf_rhoL, 'LTF_rho': ltf_rhoL, 'ZF_cM_Mb': zf_cmL, 'LTF_cM_Mb': ltf_cmL, 'cM_MB_rate_ratio': rate_ratioL, 'rate_ratio_normalized': rate_ratio_normalizedL})
 
-d.to_csv('/mnt/gluster/home/sonal.singhal1/for_ellen/ZF_LTF.recombination_rate_diffs.window100000.csv', index=False)
+d.to_csv('/mnt/gluster/home/sonal.singhal1/for_ellen/ZF_LTF.recombination_rate_diffs.window1000000.csv', index=False)

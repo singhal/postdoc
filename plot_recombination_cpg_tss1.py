@@ -62,7 +62,7 @@ for gene in genes:
 	
 	dists = [x-tss_start for x in cpg_starts]
         abs_dists = [abs(x) for x in dists]
-        min_cpg_dist = dists[abs_dists.index(np.min(abs_dists))]
+        min_cpg_dist = dists[abs_dists.index(np.min(abs_dists))] * orientation
 
         cpg_bin = np.digitize([min_cpg_dist], bins)[0]
         cpg_bin = bin_vals[cpg_bin]
@@ -72,9 +72,11 @@ tss_starts = sorted(tss.keys())
 
 
 for cpg_start in cpg:
-	dists = [x - cpg_start for x in tss_starts]
+	# inverted from normal because always should be w.r.t. to tss
+	dists = [cpg_start - x for x in tss_starts]
 	abs_dists = [abs(x) for x in dists]
-	min_tss_dist = dists[abs_dists.index(np.min(abs_dists))]
+	tss_winner = tss_starts[abs_dists.index(np.min(abs_dists))]
+	min_tss_dist = dists[abs_dists.index(np.min(abs_dists))] * tss[tss_winner]['orientation']
 
 	tss_bin = np.digitize([min_tss_dist], bins)[0]
 	tss_bin = bin_vals[tss_bin]
@@ -119,3 +121,4 @@ for bp in range(rho_starts[0], max_length):
 
 	o.write('%s,%s,%s,%s,%s,%s,%s\n' % (chr, bp, rho_val, tss_dist, cpg_dist, tss_cpg, cpg_tss))
 o.close()
+print 'done!'

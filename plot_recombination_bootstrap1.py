@@ -4,32 +4,38 @@ import random
 import scipy as sci
 import re
 import glob
+import gzip
 
-files = glob.glob("/mnt/gluster/home/sonal.singhal1/LTF/analysis/TSS/chr*")
-dir = '/mnt/gluster/home/sonal.singhal1/LTF/analysis/TSS/'
+files = glob.glob("/mnt/gluster/home/sonal.singhal1/ZF/analysis/TSS/chr*")
+dir = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/TSS/bootstrap/'
 
 values = {}
 for file in files:
-        f = open(file,'r')
+        f = gzip.open(file,'r')
         header = f.next()
         for l in f:
                 d = re.split(',', l.rstrip())
 
-                d[2] = int(d[2])
-                d[3] = float(d[3])
+                tss_bin = ((int(d[3]) / 500) + 1) * 500
+		cpg_bin = ((int(d[4]) / 500) + 1) * 500
+		rho = float(d[2])
 
-                if abs(d[2]) <= 1e5:
-                        if d[2] not in values:
-                                values[d[2]] = []
-                        values[d[2]].append(d[3])
+                if abs(tss_bin) <= 1e5 and abs(cpg_bin) <= 1e5:
+			if tss_bin not in values:
+				values[tss_bin] = {}
+			if cpg_bin not in values[tss_bin]:
+				values[tss_bin][cpg_bin] = []
+			values[tss_bin][cpg_bin].append(rho)
+	f.close()
 
 for bootstrap in range(0,100):
 	out = '%sbootstrap%s.csv' % (dir, bootstrap)
 	o = open(out, 'w')
-	o.write('location,mean\n')
-	for loc in values:
-		original = np.array(values[loc])
-		resample = np.floor(np.random.rand(len(original))*len(original)).astype(int)
-		resampled_mean = np.mean(original[resample])
-		o.write('%s,%s\n' % (loc, resampled_mean))
+	o.write('tss_dist,cpg_dist,mean,num\n')
+	for tss_dist in values:
+		for cpg_dist in values[tss_dist]:
+			original = np.array(values[tss_dist][cpg_dist])
+			resample = np.floor(np.random.rand(len(original))*len(original)).astype(int)
+			resampled_mean = np.mean(original[resample])
+			o.write('%s,%s,%s,%s\n' % (tss_dist, cpg_dist, resampled_mean, len(original)))
 	o.close()

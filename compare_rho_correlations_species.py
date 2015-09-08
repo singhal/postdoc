@@ -13,9 +13,9 @@ chrs = [ 'chr1', 'chr1A', 'chr1B', 'chr2', 'chr3',  'chr4', 'chr4A', 'chr5', 'ch
 out = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/compare_rho_two_species.csv'
 o = open(out, 'w')
 o.write('chr,window,corr,pval,deviation\n')
-for chr in chrs:
+for chr in longchrs:
 	for window in [10000, 100000, 1000000, 5000000]:
-		zf = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/LDhelmet/maps/%s.window%s.bpen100.rm.txt' % (chr, window)
+		zf = '/mnt/gluster/home/sonal.singhal1/ZF/analysis/LDhelmet/maps/%s.window%s.bpen100.txt' % (chr, window)
 		ltf = zf.replace('ZF', 'LTF')
 	
 		zfd = pd.read_csv(zf)
@@ -36,4 +36,3 @@ for chr in chrs:
 			r, pval = pearsonr(rho1, rho2)
 			o.write('%s,%s,%.3f,%.3f,%.3f\n' % (chr, window, r, pval, np.mean(dev)))
 o.close()
-	
